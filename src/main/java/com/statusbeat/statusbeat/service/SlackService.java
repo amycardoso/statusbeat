@@ -79,7 +79,7 @@ public class SlackService {
                 // Try to send notification (might fail if token is completely invalid)
                 try {
                     String notificationMessage = "⚠️ *Your Slack connection has been revoked*\n\n" +
-                            "Trackify can no longer update your Slack status. " +
+                            "StatusBeat can no longer update your Slack status. " +
                             "To resume automatic status updates, please reinstall the app.";
                     sendMessage(user.getSlackAccessToken(), user.getSlackUserId(), notificationMessage);
                     log.info("Sent invalidation notification to user {}", user.getSlackUserId());

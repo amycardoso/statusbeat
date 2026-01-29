@@ -62,10 +62,10 @@ public class AppHomeService {
         return view(view -> view
                 .type("home")
                 .blocks(asBlocks(
-                        header(header -> header.text(plainText("Welcome to Trackify! :musical_note:"))),
+                        header(header -> header.text(plainText("Welcome to StatusBeat! :musical_note:"))),
                         divider(),
                         section(section -> section.text(markdownText(
-                                "*Trackify* syncs your Spotify music to your Slack status automatically!\n\n" +
+                                "*StatusBeat* syncs your Spotify music to your Slack status automatically!\n\n" +
                                         "To get started, you'll need to connect your Slack and Spotify accounts."
                         ))),
                         actions(actions -> actions
@@ -97,7 +97,7 @@ public class AppHomeService {
         return view(view -> view
                 .type("home")
                 .blocks(asBlocks(
-                        header(header -> header.text(plainText(":musical_note: Trackify"))),
+                        header(header -> header.text(plainText(":musical_note: StatusBeat"))),
                         divider(),
                         buildConnectionStatusSection(spotifyConnected, tokenInvalidated),
                         buildCurrentPlayingSection(user),

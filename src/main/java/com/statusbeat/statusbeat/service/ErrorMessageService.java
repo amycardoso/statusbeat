@@ -20,7 +20,7 @@ public class ErrorMessageService {
         return """
                 :key: *Your Spotify connection expired*
 
-                Please reconnect your Spotify account to continue using Trackify.
+                Please reconnect your Spotify account to continue using StatusBeat.
 
                 Use `/statusbeat reconnect` to get a new connection link.
                 """;

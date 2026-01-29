@@ -114,7 +114,7 @@ SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 SPOTIFY_REDIRECT_URI=http://localhost:8080/oauth/spotify/callback
 
 # MongoDB Configuration (update if using cloud)
-SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/trackify
+SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/statusbeat
 
 # Encryption (generate a strong random key)
 ENCRYPTION_SECRET_KEY=your_32_character_secret_key_here

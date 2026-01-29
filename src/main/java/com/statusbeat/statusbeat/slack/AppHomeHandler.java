@@ -208,7 +208,7 @@ public class AppHomeHandler {
                 .blocks(asBlocks(
                         section(section -> section.text(markdownText(
                                 "*Configure your working hours*\n\n" +
-                                "Trackify will only update your status during these hours. " +
+                                "StatusBeat will only update your status during these hours. " +
                                 "Times are in your local timezone."
                         ))),
                         input(input -> input
@@ -504,7 +504,7 @@ public class AppHomeHandler {
                 .blocks(asBlocks(
                         section(section -> section.text(markdownText(
                                 "*Select which devices to track*\n\n" +
-                                "Trackify will only sync when playing on these devices. " +
+                                "StatusBeat will only sync when playing on these devices. " +
                                 "Leave all unchecked to track all devices."
                         ))),
                         input(input -> input
