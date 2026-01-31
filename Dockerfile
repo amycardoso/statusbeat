@@ -1,7 +1,7 @@
 # Multi-stage build for StatusBeat
 
 # Stage 1: Build
-FROM gradle:9.1.0-jdk AS build
+FROM gradle:9.3.1-jdk AS build
 
 WORKDIR /app
 

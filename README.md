@@ -1,7 +1,7 @@
 # StatusBeat
 
 ![Java](https://img.shields.io/badge/Java-25-orange)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.7-brightgreen)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen)
 ![MongoDB](https://img.shields.io/badge/MongoDB-8.0-green)
 ![Slack API](https://img.shields.io/badge/Slack-API-4A154B)
 ![Spotify API](https://img.shields.io/badge/Spotify-API-1DB954)
@@ -26,7 +26,7 @@ Automatically sync your currently playing Spotify music with your Slack status.
 
 ## Tech Stack
 
-- **Backend**: Java 25 + Spring Boot 3.5.7
+- **Backend**: Java 25 + Spring Boot 4.0.2
 - **Database**: MongoDB
 - **APIs**: Slack API, Spotify Web API
 - **Security**: OAuth2, Spring Security, AES-256 encryption
