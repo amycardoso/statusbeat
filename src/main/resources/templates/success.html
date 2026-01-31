@@ -3,16 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Success - StatusBeat</title>
+    <title>Mission Complete - StatusBeat</title>
     <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        /* Success-specific green CRT glow */
+        body {
+            background: radial-gradient(ellipse at center, #0a1f0a 0%, var(--pixel-black) 70%);
+        }
+
+        /* Pixel confetti colors */
+        .confetti:nth-child(1) { background: var(--pixel-green); left: 10%; animation-delay: 0s; }
+        .confetti:nth-child(2) { background: var(--pixel-purple); left: 20%; animation-delay: 0.2s; }
+        .confetti:nth-child(3) { background: var(--pixel-yellow); left: 30%; animation-delay: 0.4s; }
+        .confetti:nth-child(4) { background: var(--pixel-cyan); left: 40%; animation-delay: 0.1s; }
+        .confetti:nth-child(5) { background: var(--pixel-green); left: 50%; animation-delay: 0.3s; }
+        .confetti:nth-child(6) { background: var(--pixel-purple); left: 60%; animation-delay: 0.5s; }
+        .confetti:nth-child(7) { background: var(--pixel-yellow); left: 70%; animation-delay: 0.15s; }
+        .confetti:nth-child(8) { background: var(--pixel-cyan); left: 80%; animation-delay: 0.35s; }
+        .confetti:nth-child(9) { background: var(--pixel-green); left: 90%; animation-delay: 0.25s; }
+        .confetti:nth-child(10) { background: var(--pixel-purple); left: 15%; animation-delay: 0.45s; }
+        .confetti:nth-child(11) { background: var(--pixel-yellow); left: 35%; animation-delay: 0.55s; }
+        .confetti:nth-child(12) { background: var(--pixel-cyan); left: 55%; animation-delay: 0.6s; }
+        .confetti:nth-child(13) { background: var(--pixel-green); left: 75%; animation-delay: 0.7s; }
+        .confetti:nth-child(14) { background: var(--pixel-purple); left: 85%; animation-delay: 0.8s; }
+        .confetti:nth-child(15) { background: var(--pixel-yellow); left: 95%; animation-delay: 0.9s; }
+
+        /* Large pixel checkmark */
+        .pixel-check-large {
+            width: 64px;
+            height: 64px;
+            margin: var(--space-4) auto;
+            position: relative;
+        }
+
+        .pixel-check-large::before {
+            content: "";
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--pixel-green);
+            box-shadow:
+                8px -8px 0 var(--pixel-green),
+                16px -16px 0 var(--pixel-green),
+                24px -24px 0 var(--pixel-green),
+                32px -32px 0 var(--pixel-green),
+                -8px -8px 0 var(--pixel-green),
+                -16px -16px 0 var(--pixel-green);
+            left: 16px;
+            top: 48px;
+            animation: check-pop 0.5s steps(1) forwards, success-glow 1s steps(2) infinite;
+            filter: drop-shadow(0 0 8px var(--pixel-green-glow));
+        }
+
+        .success-card {
+            background: var(--pixel-dark);
+            border: 4px solid var(--pixel-green);
+            box-shadow:
+                inset -4px -4px 0 var(--pixel-black),
+                inset 4px 4px 0 var(--pixel-mid),
+                0 0 40px rgba(56, 183, 100, 0.3),
+                8px 8px 0 rgba(0, 0, 0, 0.5);
+        }
+    </style>
 </head>
 <body class="centered-container">
-    <div class="card">
-        <div class="icon-large success-icon">✅</div>
-        <h1 class="gradient-title">You're all set!</h1>
-        <p th:text="${message}">Successfully connected! Your music will now sync with your Slack status.</p>
+    <!-- Pixel Confetti -->
+    <div class="confetti-container">
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+        <div class="confetti"></div>
+    </div>
+
+    <div class="card success-card success-screen">
+        <!-- Pixel Checkmark -->
+        <div class="pixel-check-large"></div>
+
+        <h1 class="success-title">Mission Complete!</h1>
+
+        <p th:text="${message}" style="color: var(--pixel-white);">Successfully connected! Your music will now sync with your Slack status.</p>
+
+        <div class="pixel-divider"></div>
+
         <p>Go to Slack and try the <code>/statusbeat</code> commands!</p>
-        <a th:href="@{/}" class="button">Back to Home</a>
+
+        <a th:href="@{/}" class="pixel-btn" style="margin-top: var(--space-4);">
+            &lt; Back to Home
+        </a>
     </div>
 </body>
 </html>

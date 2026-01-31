@@ -5,30 +5,170 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Slack Connected - StatusBeat</title>
     <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        /* Split brand colors background */
+        body {
+            background: linear-gradient(135deg,
+                rgba(93, 63, 211, 0.1) 0%,
+                var(--pixel-black) 50%,
+                rgba(56, 183, 100, 0.1) 100%);
+        }
+
+        .oauth-card {
+            background: var(--pixel-dark);
+            border: 4px solid var(--pixel-gray);
+            box-shadow:
+                inset -4px -4px 0 var(--pixel-black),
+                inset 4px 4px 0 var(--pixel-mid),
+                8px 8px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        /* OAuth progress steps */
+        .oauth-progress {
+            background: var(--pixel-mid);
+            border: 4px solid var(--pixel-gray);
+            padding: var(--space-3);
+            margin: var(--space-4) 0;
+        }
+
+        .oauth-step {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-2) 0;
+            border-bottom: 2px dashed var(--pixel-gray);
+        }
+
+        .oauth-step:last-child {
+            border-bottom: none;
+        }
+
+        .oauth-step-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-pixel);
+            font-size: 12px;
+        }
+
+        .oauth-step.complete .oauth-step-icon {
+            color: var(--pixel-green);
+            text-shadow: 0 0 8px var(--pixel-green-glow);
+        }
+
+        .oauth-step.pending .oauth-step-icon {
+            color: var(--pixel-yellow);
+            animation: blink 0.5s steps(1) infinite;
+        }
+
+        .oauth-step-text {
+            font-family: var(--font-body);
+            font-size: 20px;
+            color: var(--pixel-light-gray);
+        }
+
+        .oauth-step-text strong {
+            color: var(--pixel-white);
+        }
+
+        .oauth-step.complete .oauth-step-text {
+            color: var(--pixel-green);
+        }
+
+        /* Pixel progress bar for OAuth */
+        .oauth-progress-bar {
+            width: 100%;
+            height: 16px;
+            background: var(--pixel-dark);
+            border: 4px solid var(--pixel-gray);
+            margin: var(--space-3) 0;
+            overflow: hidden;
+        }
+
+        .oauth-progress-fill {
+            width: 50%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--pixel-purple) 0px,
+                var(--pixel-purple) 8px,
+                var(--pixel-green) 8px,
+                var(--pixel-green) 16px
+            );
+            animation: progress-shimmer 1s steps(8) infinite;
+        }
+
+        @keyframes progress-shimmer {
+            0% { background-position: 0 0; }
+            100% { background-position: 16px 0; }
+        }
+
+        /* Small pixel checkmark for step */
+        .pixel-check-small {
+            width: 16px;
+            height: 16px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .pixel-check-small::before {
+            content: "";
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--pixel-green);
+            box-shadow:
+                4px -4px 0 var(--pixel-green),
+                8px -8px 0 var(--pixel-green),
+                -4px -4px 0 var(--pixel-green);
+            left: 4px;
+            top: 12px;
+        }
+    </style>
 </head>
 <body class="centered-container">
-    <div class="card">
-        <div class="logo">
-            <span class="logo-icon">🎵</span>StatusBeat
-        </div>
-        <div class="icon-large success-icon">✅</div>
-        <h1 class="success-title">Slack Connected!</h1>
-        <p>StatusBeat has been successfully installed to your workspace.</p>
-
-        <div class="success-steps message-box">
-            <div class="step">
-                <span class="step-icon">✅</span>
-                <span><strong>Step 1:</strong> Slack Connected</span>
-            </div>
-            <div class="step">
-                <span class="step-icon">➡️</span>
-                <span><strong>Step 2:</strong> Connect Spotify</span>
-            </div>
+    <div class="card oauth-card">
+        <!-- Logo -->
+        <div class="logo logo-small" style="margin-bottom: var(--space-3);">
+            <span style="font-size: 20px;">♫</span> StatusBeat
         </div>
 
-        <p>Now connect your Spotify account to start syncing your music with your Slack status!</p>
-        <!-- Note: SPOTIFY_AUTH_LINK is replaced by OAuthTemplateService.renderSuccess() -->
-        <a th:href="${spotifyAuthLink}" class="cta-button">Connect Spotify</a>
+        <!-- Success Icon - Slack colored -->
+        <div style="text-align: center; margin: var(--space-3) 0;">
+            <span style="font-size: 48px; filter: drop-shadow(0 0 8px var(--pixel-purple));">✓</span>
+        </div>
+
+        <h1 class="success-title" style="font-size: 16px;">Slack Connected!</h1>
+
+        <p style="color: var(--pixel-light-gray);">StatusBeat has been installed to your workspace.</p>
+
+        <!-- Progress Bar -->
+        <div class="oauth-progress-bar">
+            <div class="oauth-progress-fill"></div>
+        </div>
+
+        <!-- OAuth Steps -->
+        <div class="oauth-progress">
+            <div class="oauth-step complete">
+                <span class="oauth-step-icon">
+                    <span class="pixel-check-small"></span>
+                </span>
+                <span class="oauth-step-text"><strong>Step 1:</strong> Slack Connected</span>
+            </div>
+            <div class="oauth-step pending">
+                <span class="oauth-step-icon">▶</span>
+                <span class="oauth-step-text"><strong>Step 2:</strong> Connect Spotify</span>
+            </div>
+        </div>
+
+        <p style="color: var(--pixel-white);">Now connect your Spotify account to start syncing!</p>
+
+        <!-- Note: spotifyAuthLink is provided by OAuthTemplateService.renderSuccess() -->
+        <a th:href="${spotifyAuthLink}" class="pixel-btn pixel-btn-cta" style="margin-top: var(--space-3);">
+            &gt;&gt; Connect Spotify &lt;&lt;
+        </a>
     </div>
 </body>
 </html>
