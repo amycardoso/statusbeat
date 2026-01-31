@@ -41,7 +41,7 @@ dependencies {
 
 	// Encryption
 	implementation 'org.springframework.security:spring-security-crypto'
-	implementation 'org.bouncycastle:bcprov-jdk18on:1.82'
+	implementation 'org.bouncycastle:bcprov-jdk18on:1.83'
 
 	// Retry
 	implementation 'org.springframework.retry:spring-retry'
