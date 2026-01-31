@@ -1,270 +1,138 @@
-# StatusBeat Slash Commands Reference
+# StatusBeat Commands Reference
 
-Quick reference for all available StatusBeat commands in Slack.
-
-## Command Syntax
-
-All commands follow the pattern:
-```
-/statusbeat <subcommand>
-```
+All commands follow the pattern: `/statusbeat <subcommand>`
 
 ## Available Commands
 
-### 🎵 `/statusbeat play`
+### `/statusbeat play`
+
 Resume Spotify playback.
 
-**Example:**
 ```
 /statusbeat play
 ```
 
-**Response:**
-```
-▶️ Playback resumed!
-```
-
-**Requirements:**
+Requirements:
 - Spotify account connected
-- Spotify client must be active (desktop/mobile/web)
+- Spotify client active (desktop/mobile/web)
 
----
+### `/statusbeat pause`
 
-### ⏸️ `/statusbeat pause`
 Pause Spotify playback.
 
-**Example:**
 ```
 /statusbeat pause
 ```
 
-**Response:**
-```
-⏸️ Playback paused!
-```
-
-**Requirements:**
+Requirements:
 - Spotify account connected
 - Music currently playing
 
----
+### `/statusbeat status`
 
-### 📊 `/statusbeat status`
-Display your current sync status and settings.
+Display current sync status and settings.
 
-**Example:**
 ```
 /statusbeat status
 ```
 
-**Response:**
-```
-🎵 Your StatusBeat Status
+Shows: sync status, Spotify connection, currently playing track, and settings.
 
-Sync Status: ✅ Enabled
-Spotify: ✅ Connected
-Now Playing: Shape of You - Ed Sheeran
+### `/statusbeat sync`
 
-Settings:
-• Emoji: 🎵
-• Show Artist: Yes
-• Show Title: Yes
-• Notifications: Disabled
-```
+Manually trigger an immediate music sync.
 
----
-
-### 🔄 `/statusbeat sync`
-Manually trigger an immediate music sync (bypasses the 10-second polling interval).
-
-**Example:**
 ```
 /statusbeat sync
 ```
 
-**Response:**
-```
-🔄 Manual sync triggered!
-```
+Use when you want to force an immediate status update.
 
-**Use cases:**
-- Force immediate status update
-- Test if sync is working
-- Update status after changing songs
+### `/statusbeat enable`
 
----
-
-### ✅ `/statusbeat enable`
 Enable automatic music status synchronization.
 
-**Example:**
 ```
 /statusbeat enable
 ```
 
-**Response:**
-```
-✅ Music sync enabled!
-```
+Turns on automatic polling every 10 seconds.
 
-**What it does:**
-- Turns on automatic polling
-- Your Slack status will update when songs change
-- Syncs every 10 seconds
+### `/statusbeat disable`
 
----
-
-### 🚫 `/statusbeat disable`
 Disable automatic music status synchronization.
 
-**Example:**
 ```
 /statusbeat disable
 ```
 
-**Response:**
+Stops automatic polling. Playback commands still work.
+
+### `/statusbeat reconnect`
+
+Reconnect your Spotify account.
+
 ```
-🚫 Music sync disabled!
+/statusbeat reconnect
 ```
 
-**What it does:**
-- Stops automatic polling
-- Your Slack status won't update automatically
-- Previous status remains until manually changed
-- You can still use `/statusbeat play` and `/statusbeat pause`
+Use when your Spotify connection has expired or needs to be refreshed.
 
----
+### `/statusbeat help`
 
-### ❓ `/statusbeat help`
-Display help information with all available commands.
+Display help with all available commands.
 
-**Example:**
 ```
 /statusbeat help
 ```
 
-**Response:**
+## Common Workflows
+
+**Daily usage:**
 ```
-🎵 StatusBeat Commands
-
-/statusbeat play - Resume Spotify playback
-/statusbeat pause - Pause Spotify playback
-/statusbeat status - Show current sync status
-/statusbeat sync - Manually trigger music sync
-/statusbeat enable - Enable automatic music sync
-/statusbeat disable - Disable automatic music sync
-/statusbeat help - Show this help message
-
-🔗 To get started, connect your accounts at: /oauth/slack
+/statusbeat enable     # Start of day
+/statusbeat disable    # During meetings
+/statusbeat enable     # After meetings
 ```
 
----
-
-## Common Use Cases
-
-### First Time Setup
+**Playback control:**
 ```
-1. Visit http://localhost:8080 (or your deployed URL)
-2. Click "Get Started - Connect with Slack"
-3. Authorize Slack
-4. Authorize Spotify
-5. Type /statusbeat status to verify setup
+/statusbeat pause      # Pause for a call
+/statusbeat play       # Resume after
 ```
 
-### Daily Usage
+**Troubleshooting:**
 ```
-# Enable sync when starting work
-/statusbeat enable
-
-# Your status updates automatically as you listen to music
-
-# Disable sync when in meetings
-/statusbeat disable
-```
-
-### Controlling Playback from Slack
-```
-# Pause music when someone calls
-/statusbeat pause
-
-# Resume after the call
-/statusbeat play
-```
-
-### Troubleshooting
-```
-# Check if everything is connected
-/statusbeat status
-
-# Force an immediate sync
-/statusbeat sync
-
-# If status isn't updating, disable and re-enable
-/statusbeat disable
-/statusbeat enable
+/statusbeat status     # Check connection
+/statusbeat sync       # Force update
+/statusbeat reconnect  # Fix Spotify connection
 ```
 
 ## Error Messages
 
-### ❌ "You need to connect your Spotify account first"
-**Cause:** Spotify not authorized
-**Solution:** Visit the app URL and complete Spotify OAuth
+| Error | Cause | Solution |
+|-------|-------|----------|
+| "Connect your Spotify account first" | Spotify not authorized | Complete OAuth at app URL |
+| "Spotify account not connected" | Token expired | Re-authorize or use `/statusbeat reconnect` |
+| "Failed to resume playback" | No active device or no Premium | Open Spotify, verify Premium subscription |
+| "User settings not found" | Setup incomplete | Re-authorize through app |
 
-### ❌ "Your Spotify account is not connected"
-**Cause:** Spotify token expired or revoked
-**Solution:** Re-authorize Spotify through the app
+## Tips
 
-### ❌ "Failed to resume playback"
-**Cause:**
-- No active Spotify device
-- Spotify Premium required
-- Network issues
-
-**Solution:**
-- Open Spotify on any device
-- Ensure Premium subscription
-- Check internet connection
-
-### ❌ "User settings not found"
-**Cause:** Database issue or first-time setup incomplete
-**Solution:** Contact administrator or re-authorize
-
-## Tips & Tricks
-
-### 💡 Quick Status Check
-Use `/statusbeat status` to see what's currently playing without switching to Spotify
-
-### 💡 Privacy Mode
-Use `/statusbeat disable` when you don't want to share what you're listening to
-
-### 💡 Remote Control
-Control your music from Slack without opening Spotify - great for when you're deep in work
-
-### 💡 Team Visibility
-Your team can see what you're jamming to - great for discovering new music!
-
-### 💡 Meeting Mode
-Create a Slack workflow that automatically runs `/statusbeat disable` when you join a meeting
+- Use `/statusbeat status` to check what's playing without switching apps
+- Use `/statusbeat disable` for privacy during sensitive listening
+- Control playback from Slack without opening Spotify
 
 ## Customization
 
-Want to customize your music status? Check the user settings in your database or contact the admin to add a settings UI.
-
-Current customizable options:
-- Status emoji (default: 🎵)
+Configurable options:
+- Status emoji (default: `:musical_note:`)
+- Status template format (default: `{title} - {artist}`)
 - Show/hide artist name
 - Show/hide song title
-- Status template format
-- Enable/disable notifications
 
 ## Support
 
-Having issues?
 1. Run `/statusbeat status` to diagnose
-2. Check the application logs
-3. Contact your StatusBeat administrator
-4. Open an issue on GitHub
-
----
-
-Made with ❤️ for music lovers
+2. Check application logs
+3. Open an issue on GitHub
