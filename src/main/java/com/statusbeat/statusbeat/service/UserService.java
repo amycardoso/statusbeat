@@ -157,6 +157,48 @@ public class UserService {
     }
 
     @Transactional
+    public void startSync(String userId) {
+        UserSettings settings = userSettingsRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("User settings not found"));
+        settings.setSyncActive(true);
+        settings.setUpdatedAt(LocalDateTime.now());
+        userSettingsRepository.save(settings);
+
+        // Clear manual status flag when user explicitly starts
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setManualStatusSet(false);
+            user.setStatusCleared(false);
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+        });
+
+        log.info("Started sync for user {}", userId);
+    }
+
+    @Transactional
+    public void stopSync(String userId) {
+        UserSettings settings = userSettingsRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("User settings not found"));
+        settings.setSyncActive(false);
+        settings.setUpdatedAt(LocalDateTime.now());
+        userSettingsRepository.save(settings);
+
+        log.info("Stopped sync for user {}", userId);
+    }
+
+    @Transactional
+    public void setStatusCleared(String userId, boolean cleared) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setStatusCleared(cleared);
+        user.setUpdatedAt(LocalDateTime.now());
+
+        userRepository.save(user);
+        log.debug("Set status cleared flag for user {} to: {}", userId, cleared);
+    }
+
+    @Transactional
     public void updateWorkingHours(String userId, Integer startHourUtc, Integer endHourUtc, boolean enabled) {
         UserSettings settings = userSettingsRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("User settings not found"));

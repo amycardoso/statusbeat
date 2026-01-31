@@ -102,6 +102,18 @@ public class SlackService {
             backoff = @Backoff(delayExpression = "${statusbeat.retry.backoff-delay}", multiplier = 2)
     )
     public void clearUserStatus(User user) {
+        // Never clear a user's manual status
+        if (user.isManualStatusSet()) {
+            log.debug("Skipping status clear - user {} has manual status", user.getSlackUserId());
+            return;
+        }
+
+        // Only clear if we previously set a status
+        if (user.isStatusCleared()) {
+            log.debug("Status already cleared for user {}", user.getSlackUserId());
+            return;
+        }
+
         try {
             setSlackStatus(user.getSlackAccessToken(), "", "", null);
             log.info("Cleared Slack status for user {}", user.getSlackUserId());
@@ -219,13 +231,18 @@ public class SlackService {
             return false;
         }
 
+        // If current status is blank, user cleared it - that's okay, not a manual status
+        if (currentStatus.isBlank()) {
+            return false;
+        }
+
         String lastSetStatus = user.getLastSetStatusText();
 
-        if (lastSetStatus == null) {
-            boolean isManual = !currentStatus.isEmpty();
-            log.debug("No previous status set for user {}, current='{}', manual={}",
-                    user.getSlackUserId(), currentStatus, isManual);
-            return isManual;
+        // If we never set a status (or it's cleared), any non-empty status is manual
+        if (lastSetStatus == null || lastSetStatus.isBlank()) {
+            log.debug("No previous StatusBeat status for user {}, current='{}' is manual",
+                    user.getSlackUserId(), currentStatus);
+            return true;
         }
 
         boolean hasChanged = !normalizeStatusText(currentStatus).equals(normalizeStatusText(lastSetStatus));

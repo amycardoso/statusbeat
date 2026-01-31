@@ -3,6 +3,7 @@ package com.statusbeat.statusbeat.service;
 import com.statusbeat.statusbeat.constants.AppConstants;
 import com.statusbeat.statusbeat.model.CurrentlyPlayingTrackInfo;
 import com.statusbeat.statusbeat.model.User;
+import com.statusbeat.statusbeat.model.UserSettings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,56 +48,53 @@ public class MusicSyncService {
     }
 
     private void syncUserMusicStatus(User user) {
+        // Early validation
         if (user.getEncryptedSpotifyAccessToken() == null) {
             log.debug("User {} has no Spotify token, skipping sync", user.getSlackUserId());
             return;
         }
 
-        // Check if user has token invalidated
         if (user.isTokenInvalidated()) {
             log.debug("User {} has invalidated token, skipping sync", user.getSlackUserId());
             return;
         }
 
-        if (!isWithinWorkingHours(user)) {
-            log.debug("User {} is outside working hours, skipping sync", user.getSlackUserId());
+        UserSettings settings = userService.getUserSettings(user.getId()).orElse(null);
+        if (settings == null) {
+            log.debug("User {} has no settings, skipping sync", user.getSlackUserId());
+            return;
+        }
+
+        // === SINGLE GATE CHECK ===
+        if (!canSyncStatus(user, settings)) {
+            return;
+        }
+
+        // Check for manual status change EVERY cycle
+        if (slackService.hasManualStatusChange(user)) {
+            log.info("User {} has manually changed their status, stopping sync", user.getSlackUserId());
+            userService.setManualStatusFlag(user.getId(), true);
+            userService.stopSync(user.getId());
             return;
         }
 
         CurrentlyPlayingTrackInfo currentTrack = spotifyService.getCurrentlyPlayingTrack(user);
 
         if (currentTrack == null || !currentTrack.isPlaying()) {
-            handleNoTrackPlaying(user);
+            handleNoTrackPlaying(user, settings);
             return;
         }
 
         if (!isDeviceAllowed(user, currentTrack.getDeviceId())) {
             log.debug("User {} is playing on non-tracked device '{}', skipping sync",
                     user.getSlackUserId(), currentTrack.getDeviceName());
-            handleNoTrackPlaying(user);
+            handleNoTrackPlaying(user, settings);
             return;
         }
 
         boolean trackChanged = hasTrackChanged(user, currentTrack);
         boolean needsExpirationRefresh = shouldRefreshExpiration(currentTrack);
         boolean shouldUpdateStatus = trackChanged || needsExpirationRefresh;
-
-        if (!user.isManualStatusSet() && slackService.hasManualStatusChange(user)) {
-            log.info("User {} has manually changed their status, pausing automatic updates", user.getSlackUserId());
-            userService.setManualStatusFlag(user.getId(), true);
-            return;
-        }
-
-        if (user.isManualStatusSet()) {
-            if (trackChanged) {
-                log.info("Track changed for user {} while manual status was set, resuming automatic updates",
-                        user.getSlackUserId());
-                userService.setManualStatusFlag(user.getId(), false);
-            } else {
-                log.debug("User {} has manual status set, skipping automatic update", user.getSlackUserId());
-                return;
-            }
-        }
 
         if (trackChanged) {
             log.info("Track changed for user {}: {} - {}",
@@ -124,9 +122,44 @@ public class MusicSyncService {
                     currentTrack.getDurationMs(),
                     currentTrack.getProgressMs()
             );
+
+            // Mark that we have set a status
+            userService.setStatusCleared(user.getId(), false);
         } else {
             log.debug("Same track playing for user {}, expiration still valid - skipping update", user.getSlackUserId());
         }
+    }
+
+    /**
+     * Single gate method that checks ALL conditions before syncing.
+     * Returns true only if all conditions are met.
+     */
+    private boolean canSyncStatus(User user, UserSettings settings) {
+        // 1. Must be enabled
+        if (!settings.isSyncEnabled()) {
+            log.trace("Sync disabled for user {}", user.getSlackUserId());
+            return false;
+        }
+
+        // 2. Must be actively running (user pressed start)
+        if (!settings.isSyncActive()) {
+            log.trace("Sync not active for user {}", user.getSlackUserId());
+            return false;
+        }
+
+        // 3. Must be within working hours (if configured)
+        if (!isWithinWorkingHours(user, settings)) {
+            log.trace("Outside working hours for user {}", user.getSlackUserId());
+            return false;
+        }
+
+        // 4. Must not have manual status override
+        if (user.isManualStatusSet()) {
+            log.trace("Manual status override for user {}", user.getSlackUserId());
+            return false;
+        }
+
+        return true;
     }
 
     private boolean shouldRefreshExpiration(CurrentlyPlayingTrackInfo currentTrack) {
@@ -147,11 +180,12 @@ public class MusicSyncService {
         return shouldRefresh;
     }
 
-    private void handleNoTrackPlaying(User user) {
+    private void handleNoTrackPlaying(User user, UserSettings settings) {
         if (user.getCurrentlyPlayingSongId() != null) {
             log.info("No track playing for user {}, clearing status", user.getSlackUserId());
             slackService.clearUserStatus(user);
             userService.clearCurrentlyPlaying(user.getId());
+            userService.setStatusCleared(user.getId(), true);
         }
     }
 
@@ -193,35 +227,26 @@ public class MusicSyncService {
         return isAllowed;
     }
 
-    private boolean isWithinWorkingHours(User user) {
-        var settings = userService.getUserSettings(user.getId());
-
-        if (settings.isEmpty()) {
-            log.warn("No settings found for user {}, allowing sync", user.getSlackUserId());
+    private boolean isWithinWorkingHours(User user, UserSettings settings) {
+        if (!settings.isWorkingHoursEnabled()) {
             return true;
         }
 
-        var userSettings = settings.get();
-
-        if (!userSettings.isWorkingHoursEnabled()) {
-            return true;
-        }
-
-        if (userSettings.getSyncStartHour() == null || userSettings.getSyncEndHour() == null) {
+        if (settings.getSyncStartHour() == null || settings.getSyncEndHour() == null) {
             log.debug("Working hours enabled but not configured for user {}, allowing sync", user.getSlackUserId());
             return true;
         }
 
         boolean isWithin = timezoneService.isWithinWorkingHours(
-                userSettings.getSyncStartHour(),
-                userSettings.getSyncEndHour()
+                settings.getSyncStartHour(),
+                settings.getSyncEndHour()
         );
 
         if (!isWithin) {
             log.debug("User {} is outside working hours (UTC {} - {}), skipping sync",
                     user.getSlackUserId(),
-                    formatHHMM(userSettings.getSyncStartHour()),
-                    formatHHMM(userSettings.getSyncEndHour()));
+                    formatHHMM(settings.getSyncStartHour()),
+                    formatHHMM(settings.getSyncEndHour()));
         }
 
         return isWithin;
@@ -238,6 +263,12 @@ public class MusicSyncService {
 
         User user = userService.findBySlackUserId(userId)
                 .orElseThrow(() -> new RuntimeException(AppConstants.ERROR_USER_NOT_FOUND));
+
+        // Manual sync starts sync if not already active
+        UserSettings settings = userService.getUserSettings(user.getId()).orElse(null);
+        if (settings != null && settings.isSyncEnabled() && !settings.isSyncActive()) {
+            userService.startSync(user.getId());
+        }
 
         syncUserMusicStatus(user);
     }
