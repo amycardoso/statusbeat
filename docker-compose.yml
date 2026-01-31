@@ -3,20 +3,20 @@ version: '3.8'
 services:
   mongodb:
     image: mongo:7.0
-    container_name: trackify-mongodb
+    container_name: statusbeat-mongodb
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_DATABASE: trackify
+      MONGO_INITDB_DATABASE: statusbeat
     volumes:
       - mongodb_data:/data/db
     networks:
-      - trackify-network
+      - statusbeat-network
     restart: unless-stopped
 
   app:
     build: .
-    container_name: trackify-app
+    container_name: statusbeat-app
     ports:
       - "8080:8080"
     environment:
@@ -33,14 +33,14 @@ services:
       SPOTIFY_REDIRECT_URI: ${SPOTIFY_REDIRECT_URI}
 
       # MongoDB Configuration
-      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/trackify
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/statusbeat
 
       # Encryption
       ENCRYPTION_SECRET_KEY: ${ENCRYPTION_SECRET_KEY}
     depends_on:
       - mongodb
     networks:
-      - trackify-network
+      - statusbeat-network
     restart: unless-stopped
 
 volumes:
@@ -48,5 +48,5 @@ volumes:
     driver: local
 
 networks:
-  trackify-network:
+  statusbeat-network:
     driver: bridge

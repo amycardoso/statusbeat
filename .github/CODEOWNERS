@@ -1,4 +1,4 @@
-# CODEOWNERS file for Slackify
+# CODEOWNERS file for StatusBeat
 # These owners will be requested for review when someone opens a pull request.
 # More info: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
@@ -15,8 +15,8 @@ src/main/resources/application.properties @amycardoso
 .env.example @amycardoso
 
 # Security-sensitive files
-src/main/java/com/trackify/trackify/util/EncryptionUtil.java @amycardoso
-src/main/java/com/trackify/trackify/config/SecurityConfig.java @amycardoso
+src/main/java/com/statusbeat/statusbeat/util/EncryptionUtil.java @amycardoso
+src/main/java/com/statusbeat/statusbeat/config/SecurityConfig.java @amycardoso
 
 # Documentation
 *.md @amycardoso

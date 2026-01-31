@@ -1,4 +1,4 @@
-# Multi-stage build for Trackify
+# Multi-stage build for StatusBeat
 
 # Stage 1: Build
 FROM gradle:9.1.0-jdk AS build

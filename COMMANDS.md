@@ -1,22 +1,22 @@
-# Trackify Slash Commands Reference
+# StatusBeat Slash Commands Reference
 
-Quick reference for all available Trackify commands in Slack.
+Quick reference for all available StatusBeat commands in Slack.
 
 ## Command Syntax
 
 All commands follow the pattern:
 ```
-/trackify <subcommand>
+/statusbeat <subcommand>
 ```
 
 ## Available Commands
 
-### 🎵 `/trackify play`
+### 🎵 `/statusbeat play`
 Resume Spotify playback.
 
 **Example:**
 ```
-/trackify play
+/statusbeat play
 ```
 
 **Response:**
@@ -30,12 +30,12 @@ Resume Spotify playback.
 
 ---
 
-### ⏸️ `/trackify pause`
+### ⏸️ `/statusbeat pause`
 Pause Spotify playback.
 
 **Example:**
 ```
-/trackify pause
+/statusbeat pause
 ```
 
 **Response:**
@@ -49,17 +49,17 @@ Pause Spotify playback.
 
 ---
 
-### 📊 `/trackify status`
+### 📊 `/statusbeat status`
 Display your current sync status and settings.
 
 **Example:**
 ```
-/trackify status
+/statusbeat status
 ```
 
 **Response:**
 ```
-🎵 Your Trackify Status
+🎵 Your StatusBeat Status
 
 Sync Status: ✅ Enabled
 Spotify: ✅ Connected
@@ -74,12 +74,12 @@ Settings:
 
 ---
 
-### 🔄 `/trackify sync`
+### 🔄 `/statusbeat sync`
 Manually trigger an immediate music sync (bypasses the 10-second polling interval).
 
 **Example:**
 ```
-/trackify sync
+/statusbeat sync
 ```
 
 **Response:**
@@ -94,12 +94,12 @@ Manually trigger an immediate music sync (bypasses the 10-second polling interva
 
 ---
 
-### ✅ `/trackify enable`
+### ✅ `/statusbeat enable`
 Enable automatic music status synchronization.
 
 **Example:**
 ```
-/trackify enable
+/statusbeat enable
 ```
 
 **Response:**
@@ -114,12 +114,12 @@ Enable automatic music status synchronization.
 
 ---
 
-### 🚫 `/trackify disable`
+### 🚫 `/statusbeat disable`
 Disable automatic music status synchronization.
 
 **Example:**
 ```
-/trackify disable
+/statusbeat disable
 ```
 
 **Response:**
@@ -131,29 +131,29 @@ Disable automatic music status synchronization.
 - Stops automatic polling
 - Your Slack status won't update automatically
 - Previous status remains until manually changed
-- You can still use `/trackify play` and `/trackify pause`
+- You can still use `/statusbeat play` and `/statusbeat pause`
 
 ---
 
-### ❓ `/trackify help`
+### ❓ `/statusbeat help`
 Display help information with all available commands.
 
 **Example:**
 ```
-/trackify help
+/statusbeat help
 ```
 
 **Response:**
 ```
-🎵 Trackify Commands
+🎵 StatusBeat Commands
 
-/trackify play - Resume Spotify playback
-/trackify pause - Pause Spotify playback
-/trackify status - Show current sync status
-/trackify sync - Manually trigger music sync
-/trackify enable - Enable automatic music sync
-/trackify disable - Disable automatic music sync
-/trackify help - Show this help message
+/statusbeat play - Resume Spotify playback
+/statusbeat pause - Pause Spotify playback
+/statusbeat status - Show current sync status
+/statusbeat sync - Manually trigger music sync
+/statusbeat enable - Enable automatic music sync
+/statusbeat disable - Disable automatic music sync
+/statusbeat help - Show this help message
 
 🔗 To get started, connect your accounts at: /oauth/slack
 ```
@@ -168,40 +168,40 @@ Display help information with all available commands.
 2. Click "Get Started - Connect with Slack"
 3. Authorize Slack
 4. Authorize Spotify
-5. Type /trackify status to verify setup
+5. Type /statusbeat status to verify setup
 ```
 
 ### Daily Usage
 ```
 # Enable sync when starting work
-/trackify enable
+/statusbeat enable
 
 # Your status updates automatically as you listen to music
 
 # Disable sync when in meetings
-/trackify disable
+/statusbeat disable
 ```
 
 ### Controlling Playback from Slack
 ```
 # Pause music when someone calls
-/trackify pause
+/statusbeat pause
 
 # Resume after the call
-/trackify play
+/statusbeat play
 ```
 
 ### Troubleshooting
 ```
 # Check if everything is connected
-/trackify status
+/statusbeat status
 
 # Force an immediate sync
-/trackify sync
+/statusbeat sync
 
 # If status isn't updating, disable and re-enable
-/trackify disable
-/trackify enable
+/statusbeat disable
+/statusbeat enable
 ```
 
 ## Error Messages
@@ -232,10 +232,10 @@ Display help information with all available commands.
 ## Tips & Tricks
 
 ### 💡 Quick Status Check
-Use `/trackify status` to see what's currently playing without switching to Spotify
+Use `/statusbeat status` to see what's currently playing without switching to Spotify
 
 ### 💡 Privacy Mode
-Use `/trackify disable` when you don't want to share what you're listening to
+Use `/statusbeat disable` when you don't want to share what you're listening to
 
 ### 💡 Remote Control
 Control your music from Slack without opening Spotify - great for when you're deep in work
@@ -244,7 +244,7 @@ Control your music from Slack without opening Spotify - great for when you're de
 Your team can see what you're jamming to - great for discovering new music!
 
 ### 💡 Meeting Mode
-Create a Slack workflow that automatically runs `/trackify disable` when you join a meeting
+Create a Slack workflow that automatically runs `/statusbeat disable` when you join a meeting
 
 ## Customization
 
@@ -260,9 +260,9 @@ Current customizable options:
 ## Support
 
 Having issues?
-1. Run `/trackify status` to diagnose
+1. Run `/statusbeat status` to diagnose
 2. Check the application logs
-3. Contact your Trackify administrator
+3. Contact your StatusBeat administrator
 4. Open an issue on GitHub
 
 ---

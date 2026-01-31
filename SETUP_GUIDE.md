@@ -1,6 +1,6 @@
-# 🚀 Trackify Setup Guide
+# 🚀 StatusBeat Setup Guide
 
-This guide will walk you through setting up Trackify step by step.
+This guide will walk you through setting up StatusBeat step by step.
 
 ## Prerequisites Checklist
 
@@ -47,7 +47,7 @@ brew services list | grep mongodb
 
 **Option B: Docker**
 ```bash
-docker run -d -p 27017:27017 --name trackify-mongodb mongo:7.0
+docker run -d -p 27017:27017 --name statusbeat-mongodb mongo:7.0
 ```
 
 **Option C: MongoDB Atlas (Cloud)**
@@ -63,7 +63,7 @@ docker run -d -p 27017:27017 --name trackify-mongodb mongo:7.0
 1. **Go to Slack API Console**
    - Visit: https://api.slack.com/apps
    - Click "Create New App" → "From scratch"
-   - App Name: `Trackify`
+   - App Name: `StatusBeat`
    - Workspace: Select your workspace
    - Click "Create App"
 
@@ -84,7 +84,7 @@ docker run -d -p 27017:27017 --name trackify-mongodb mongo:7.0
 4. **Create Slash Command**
    - In left sidebar, click "Slash Commands"
    - Click "Create New Command"
-   - Command: `/trackify`
+   - Command: `/statusbeat`
    - Request URL: `http://localhost:8080/slack/events`
    - Short Description: `Control your music sync`
    - Usage Hint: `[play|pause|status|help]`
@@ -130,7 +130,7 @@ If you previously installed the app without these event subscriptions:
    - Click "Create an App"
 
 2. **Configure App**
-   - App Name: `Trackify`
+   - App Name: `StatusBeat`
    - App Description: `Music-Slack Status Sync`
    - Redirect URIs: Add `http://localhost:8080/oauth/spotify/callback`
    - Check the agreement box
@@ -179,10 +179,10 @@ If you previously installed the app without these event subscriptions:
 
    # MongoDB Configuration
    # For local MongoDB:
-   SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/trackify
+   SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/statusbeat
 
    # For MongoDB Atlas:
-   # SPRING_DATA_MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/trackify
+   # SPRING_DATA_MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/statusbeat
 
    # Encryption (from generated key)
    ENCRYPTION_SECRET_KEY=your_generated_key_from_step_2
@@ -213,12 +213,12 @@ If you previously installed the app without these event subscriptions:
 
    Or run the JAR directly:
    ```bash
-   java -jar build/libs/trackify-0.0.1-SNAPSHOT.jar
+   java -jar build/libs/statusbeat-0.0.1-SNAPSHOT.jar
    ```
 
 4. **Verify it's running:**
    - Open browser to http://localhost:8080
-   - You should see the Trackify home page
+   - You should see the StatusBeat home page
 
 ### 8. Test the Setup
 
@@ -230,13 +230,13 @@ If you previously installed the app without these event subscriptions:
 
 2. **Test Slack commands:**
    - Open Slack
-   - Type `/trackify help`
+   - Type `/statusbeat help`
    - You should see the help message
 
 3. **Test the Home Tab:**
    - Open Slack
    - Go to "Apps" in the sidebar
-   - Click on "Trackify"
+   - Click on "StatusBeat"
    - Click the "Home" tab
    - You should see your Home UI with connection status and settings!
 
@@ -306,13 +306,13 @@ echo $SLACK_CLIENT_ID
 1. **Check sync is enabled:**
    ```bash
    # In Slack
-   /trackify status
+   /statusbeat status
    ```
 
 2. **Check logs:**
    ```bash
    # View application logs
-   tail -f logs/trackify.log
+   tail -f logs/statusbeat.log
 
    # Or if using docker-compose
    docker-compose logs -f app
@@ -321,7 +321,7 @@ echo $SLACK_CLIENT_ID
 3. **Manual sync:**
    ```bash
    # In Slack
-   /trackify sync
+   /statusbeat sync
    ```
 
 ### MongoDB connection issues
@@ -364,7 +364,7 @@ When deploying to production:
 
 - Read the [README.md](README.md) for complete documentation
 - Customize your status template
-- Invite team members to use Trackify
+- Invite team members to use StatusBeat
 - Report issues or contribute on GitHub
 
 ## Getting Help
@@ -373,7 +373,7 @@ If you encounter issues:
 
 1. Check the troubleshooting section above
 2. Review application logs
-3. Check [GitHub Issues](https://github.com/your-repo/trackify/issues)
+3. Check [GitHub Issues](https://github.com/your-repo/statusbeat/issues)
 4. Create a new issue with:
    - Steps to reproduce
    - Error messages
