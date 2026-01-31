@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.5.7'
+	id 'org.springframework.boot' version '4.0.2'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -31,7 +31,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-	// Slack SDK (using jakarta-servlet for Spring Boot 3)
+	// Slack SDK (using jakarta-servlet for Spring Boot 4)
 	implementation 'com.slack.api:bolt:1.46.0'
 	implementation 'com.slack.api:bolt-jakarta-servlet:1.46.0'
 	implementation 'com.slack.api:bolt-jetty:1.46.0'
@@ -44,7 +44,7 @@ dependencies {
 	implementation 'org.bouncycastle:bcprov-jdk18on:1.83'
 
 	// Retry
-	implementation 'org.springframework.retry:spring-retry'
+	implementation 'org.springframework.retry:spring-retry:2.0.11'
 	implementation 'org.springframework:spring-aspects'
 
 	// Utilities
