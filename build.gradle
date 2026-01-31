@@ -32,9 +32,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 	// Slack SDK (using jakarta-servlet for Spring Boot 3)
-	implementation 'com.slack.api:bolt:1.45.4'
-	implementation 'com.slack.api:bolt-jakarta-servlet:1.45.4'
-	implementation 'com.slack.api:bolt-jetty:1.45.4'
+	implementation 'com.slack.api:bolt:1.46.0'
+	implementation 'com.slack.api:bolt-jakarta-servlet:1.46.0'
+	implementation 'com.slack.api:bolt-jetty:1.46.0'
 
 	// Spotify Web API
 	implementation 'se.michaelthelin.spotify:spotify-web-api-java:9.3.0'
