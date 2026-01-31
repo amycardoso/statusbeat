@@ -4,298 +4,324 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StatusBeat - Music-Slack Status Sync</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
     <style>
-        :root {
-            --spotify-green: #1DB954;
-            --slack-purple: #4A154B;
-            --bg-dark: #121212;
-            --bg-card: #181818;
-            --text-white: #FFFFFF;
-            --text-gray: #B3B3B3;
-            --hover-bg: #282828;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-white);
-            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             min-height: 100vh;
+            padding: 16px;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
+        .window-frame {
+            margin: 0;
+            max-width: 960px;
         }
 
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 20px;
+        .window-content {
+            padding: 32px 40px;
         }
 
+        /* Logo */
         .logo {
-            font-size: 48px;
-            font-weight: 900;
-            margin-bottom: 16px;
-            background: linear-gradient(135deg, var(--spotify-green) 0%, var(--slack-purple) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -2px;
-        }
-
-        .logo-icon {
-            display: inline-block;
-            margin-right: 8px;
-        }
-
-        .subtitle {
-            font-size: 18px;
-            color: var(--text-gray);
-            margin-bottom: 24px;
-            font-weight: 300;
-        }
-
-        .cta-button {
-            display: inline-block;
-            padding: 14px 32px;
-            background: var(--spotify-green);
-            color: var(--text-white);
-            text-decoration: none;
-            border-radius: 500px;
-            font-weight: 700;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 24px rgba(29, 185, 84, 0.3);
-        }
-
-        .cta-button:hover {
-            background: #1ed760;
-            transform: scale(1.05);
-            box-shadow: 0 12px 32px rgba(29, 185, 84, 0.4);
-        }
-
-        /* Features Section */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 16px;
-            margin-bottom: 40px;
-        }
-
-        .feature {
-            background: var(--bg-card);
-            padding: 20px;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .feature:hover {
-            background: var(--hover-bg);
-            transform: translateY(-4px);
-            border-color: var(--spotify-green);
-            box-shadow: 0 8px 24px rgba(29, 185, 84, 0.1);
-        }
-
-        .feature-icon {
             font-size: 28px;
             margin-bottom: 12px;
-            display: inline-block;
         }
 
-        .feature h3 {
-            font-size: 16px;
-            margin-bottom: 8px;
-            color: var(--text-white);
-            font-weight: 700;
+        /* Equalizer */
+        .equalizer {
+            height: 36px;
+            margin: 12px 0;
         }
+        .eq-bar { width: 8px; }
+        .eq-bar:nth-child(1) { height: 18px; }
+        .eq-bar:nth-child(2) { height: 30px; }
+        .eq-bar:nth-child(3) { height: 24px; }
+        .eq-bar:nth-child(4) { height: 36px; }
+        .eq-bar:nth-child(5) { height: 27px; }
+        .eq-bar:nth-child(6) { height: 15px; }
+        .eq-bar:nth-child(7) { height: 33px; }
 
-        .feature p {
-            color: var(--text-gray);
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        /* Commands Section */
-        .commands {
-            background: var(--bg-card);
-            padding: 32px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .commands h2 {
+        .subtitle {
             font-size: 24px;
-            margin-bottom: 24px;
-            text-align: center;
-            color: var(--text-white);
+            margin-bottom: 16px;
         }
 
-        .commands-list {
+        /* CTA */
+        .pixel-btn-cta {
+            font-size: 14px;
+            padding: 16px 28px;
+        }
+
+        /* Compact dividers */
+        .pixel-divider, .dashed-divider {
+            margin: 16px 0;
+        }
+
+        /* Features grid */
+        .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 12px;
-            list-style: none;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 16px 0;
+        }
+
+        .feature-compact {
+            text-align: center;
+            padding: 16px 12px;
+            border: 2px solid var(--pixel-gray);
+            background: var(--pixel-mid);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .feature-compact:hover {
+            border-color: var(--pixel-green);
+        }
+
+        .feature-compact .icon {
+            font-size: 24px;
+        }
+
+        .feature-compact .label {
+            font-family: var(--font-ui);
+            font-size: 14px;
+            color: var(--pixel-green);
+            text-transform: uppercase;
+        }
+
+        .feature-compact .desc {
+            font-family: var(--font-ui);
+            font-size: 12px;
+            color: var(--pixel-white);
+        }
+
+        /* Commands - 2 column grid */
+        .commands-section {
+            padding: 16px 24px;
+            margin: 0;
+        }
+
+        .commands-section h2 {
+            font-size: 14px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+        }
+
+        .command-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
         }
 
         .command-item {
-            background: var(--bg-dark);
-            padding: 14px 18px;
-            border-radius: 8px;
-            border-left: 4px solid var(--spotify-green);
-            transition: all 0.3s ease;
-        }
-
-        .command-item:hover {
-            border-left-color: var(--slack-purple);
-            transform: translateX(4px);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
         }
 
         .command-item code {
-            color: var(--spotify-green);
-            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-            font-size: 14px;
-            font-weight: 600;
-            background: rgba(29, 185, 84, 0.1);
+            font-size: 16px;
             padding: 4px 8px;
-            border-radius: 4px;
+            white-space: nowrap;
         }
 
         .command-item span {
-            color: var(--text-gray);
-            margin-left: 12px;
             font-size: 14px;
+            margin-left: 10px;
+            color: var(--pixel-white);
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .logo {
-                font-size: 40px;
-            }
+        /* Compact status bar */
+        .window-status-bar {
+            padding: 4px 12px;
+            font-size: 10px;
+        }
 
+        .progress-bar {
+            width: 80px;
+            height: 10px;
+        }
+
+        @media (max-width: 800px) {
+            .window-content {
+                padding: 24px 20px;
+            }
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .command-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .logo {
+                font-size: 22px;
+            }
             .subtitle {
                 font-size: 18px;
             }
-
-            .cta-button {
-                padding: 16px 36px;
+            .pixel-btn-cta {
+                font-size: 12px;
+                padding: 12px 20px;
+            }
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+            .feature-compact {
+                padding: 8px 4px;
+            }
+            .feature-compact .icon {
                 font-size: 14px;
             }
-
-            .features {
-                grid-template-columns: 1fr;
+            .feature-compact .label {
+                font-size: 9px;
             }
-
-            .commands {
-                padding: 32px 24px;
+            .feature-compact .desc {
+                font-size: 8px;
             }
-
-            .commands h2 {
-                font-size: 24px;
-            }
-
-            .commands-list {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .hero, .features, .commands {
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        /* Gradient Accent */
-        .gradient-line {
-            height: 3px;
-            background: linear-gradient(90deg, var(--spotify-green) 0%, var(--slack-purple) 100%);
-            margin: 40px auto 30px;
-            width: 150px;
-            border-radius: 2px;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <!-- Hero Section -->
-        <div class="hero">
-            <h1 class="logo">
-                <span class="logo-icon">♫</span>StatusBeat
-            </h1>
-            <p class="subtitle">Sync your currently playing music with your Slack status</p>
-            <a th:href="@{/slack/install}" class="cta-button">Get Started - Connect with Slack</a>
-        </div>
-
-        <!-- Gradient Divider -->
-        <div class="gradient-line"></div>
-
-        <!-- Features Section -->
-        <div class="features">
-            <div class="feature">
-                <div class="feature-icon">🎧</div>
-                <h3>Auto-sync your music</h3>
-                <p>Automatically update your Slack status with what you're listening to on Spotify</p>
+<body class="pixel-bg">
+    <!-- Retro Window Frame -->
+    <div class="window-frame">
+        <!-- Title Bar -->
+        <div class="window-title-bar">
+            <div class="window-title">
+                <span class="window-title-icon">♫</span>
+                <span>StatusBeat v1.0</span>
             </div>
-            <div class="feature">
-                <div class="feature-icon">⚡</div>
-                <h3>Real-time updates</h3>
-                <p>Status updates every 10 seconds when your music changes</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🎮</div>
-                <h3>Playback controls</h3>
-                <p>Control Spotify playback directly from Slack with slash commands</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">✨</div>
-                <h3>Customizable</h3>
-                <p>Choose your emoji, customize status format, and control what's shown</p>
+            <div class="window-controls">
+                <div class="window-btn">_</div>
+                <div class="window-btn">O</div>
+                <div class="window-btn">X</div>
             </div>
         </div>
 
-        <!-- Commands Section -->
-        <div class="commands">
-            <h2>Available Commands</h2>
-            <ul class="commands-list">
-                <li class="command-item">
-                    <code>/statusbeat play</code>
-                    <span>Resume playback</span>
-                </li>
-                <li class="command-item">
-                    <code>/statusbeat pause</code>
-                    <span>Pause playback</span>
-                </li>
-                <li class="command-item">
-                    <code>/statusbeat status</code>
-                    <span>View sync status</span>
-                </li>
-                <li class="command-item">
-                    <code>/statusbeat enable/disable</code>
-                    <span>Toggle sync</span>
-                </li>
-            </ul>
+        <!-- Window Content -->
+        <div class="window-content">
+            <!-- Hero Section -->
+            <div style="text-align: center;">
+                <h1 class="logo glitch-text">♫ StatusBeat ♫</h1>
+
+                <!-- Animated Equalizer -->
+                <div class="equalizer">
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                </div>
+
+                <p class="subtitle">Sync your beats to Slack</p>
+
+                <!-- CTA Button -->
+                <a th:href="@{/slack/install}" class="pixel-btn pixel-btn-cta">
+                    &gt;&gt;&gt; Connect to Slack &lt;&lt;&lt;
+                </a>
+            </div>
+
+            <!-- Pixel Divider -->
+            <div class="pixel-divider"></div>
+
+            <!-- Features - 8 in 2 rows -->
+            <div class="features-grid">
+                <div class="feature-compact">
+                    <span class="icon">♪</span>
+                    <span class="label">Auto-Sync</span>
+                    <span class="desc">Spotify to Slack</span>
+                </div>
+                <div class="feature-compact">
+                    <span class="icon">⚡</span>
+                    <span class="label">Real-Time</span>
+                    <span class="desc">Live updates</span>
+                </div>
+                <div class="feature-compact">
+                    <span class="icon">►</span>
+                    <span class="label">Controls</span>
+                    <span class="desc">Play/pause</span>
+                </div>
+                <div class="feature-compact">
+                    <span class="icon">🎨</span>
+                    <span class="label">Custom Emoji</span>
+                    <span class="desc">Pick your icon</span>
+                </div>
+                <div class="feature-compact">
+                    <span class="icon">🕐</span>
+                    <span class="label">Work Hours</span>
+                    <span class="desc">Schedule sync</span>
+                </div>
+                <div class="feature-compact">
+                    <span class="icon">📱</span>
+                    <span class="label">Devices</span>
+                    <span class="desc">Filter sources</span>
+                </div>
+                <div class="feature-compact">
+                    <span class="icon">✏️</span>
+                    <span class="label">Format</span>
+                    <span class="desc">Artist &amp; title</span>
+                </div>
+                <div class="feature-compact">
+                    <span class="icon">🔔</span>
+                    <span class="label">Alerts</span>
+                    <span class="desc">Notifications</span>
+                </div>
+            </div>
+
+            <!-- Dashed Divider -->
+            <hr class="dashed-divider">
+
+            <!-- Commands Section - All 8 in 2 columns -->
+            <div class="commands-section">
+                <h2>// Commands</h2>
+                <ul class="command-list">
+                    <li class="command-item">
+                        <code>/statusbeat play</code><span>Resume playback</span>
+                    </li>
+                    <li class="command-item">
+                        <code>/statusbeat pause</code><span>Pause playback</span>
+                    </li>
+                    <li class="command-item">
+                        <code>/statusbeat status</code><span>View sync status</span>
+                    </li>
+                    <li class="command-item">
+                        <code>/statusbeat sync</code><span>Manual sync</span>
+                    </li>
+                    <li class="command-item">
+                        <code>/statusbeat enable</code><span>Enable sync</span>
+                    </li>
+                    <li class="command-item">
+                        <code>/statusbeat disable</code><span>Disable sync</span>
+                    </li>
+                    <li class="command-item">
+                        <code>/statusbeat reconnect</code><span>Relink Spotify</span>
+                    </li>
+                    <li class="command-item">
+                        <code>/statusbeat help</code><span>Show help</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="window-status-bar">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>READY</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
         </div>
     </div>
 </body>
