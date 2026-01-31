@@ -52,6 +52,30 @@
         .pixel-btn-cta {
             font-size: 14px;
             padding: 16px 28px;
+            color: var(--pixel-black);
+            font-weight: bold;
+        }
+
+        /* Focus states for keyboard navigation */
+        .pixel-btn-cta:focus {
+            outline: 3px solid var(--pixel-cyan);
+            outline-offset: 3px;
+        }
+
+        .feature-compact:focus-within,
+        a:focus {
+            outline: 3px solid var(--pixel-cyan);
+            outline-offset: 2px;
+        }
+
+        /* Reduced motion for users who prefer it */
+        @media (prefers-reduced-motion: reduce) {
+            .eq-bar,
+            .equalizer,
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
         }
 
         /* Compact dividers */
@@ -79,7 +103,8 @@
         }
 
         .feature-compact:hover {
-            border-color: var(--pixel-green);
+            border-color: var(--pixel-cyan);
+            background: rgba(58, 190, 255, 0.05);
         }
 
         .feature-compact .icon {
@@ -89,8 +114,10 @@
         .feature-compact .label {
             font-family: var(--font-ui);
             font-size: 14px;
-            color: var(--pixel-green);
+            color: var(--pixel-green-glow);
             text-transform: uppercase;
+            border-bottom: 2px solid currentColor;
+            padding-bottom: 2px;
         }
 
         .feature-compact .desc {
@@ -121,12 +148,16 @@
             padding: 10px 14px;
             display: flex;
             align-items: center;
+            border-left: 3px solid var(--pixel-cyan);
         }
 
         .command-item code {
             font-size: 16px;
             padding: 4px 8px;
             white-space: nowrap;
+            color: var(--pixel-cyan);
+            background: rgba(58, 190, 255, 0.1);
+            border-color: var(--pixel-cyan);
         }
 
         .command-item span {
@@ -205,13 +236,13 @@
         </div>
 
         <!-- Window Content -->
-        <div class="window-content">
+        <main class="window-content">
             <!-- Hero Section -->
             <div style="text-align: center;">
                 <h1 class="logo glitch-text">♫ StatusBeat ♫</h1>
 
-                <!-- Animated Equalizer -->
-                <div class="equalizer">
+                <!-- Animated Equalizer (decorative) -->
+                <div class="equalizer" aria-hidden="true">
                     <div class="eq-bar"></div>
                     <div class="eq-bar"></div>
                     <div class="eq-bar"></div>
@@ -224,7 +255,7 @@
                 <p class="subtitle">Sync your beats to Slack</p>
 
                 <!-- CTA Button -->
-                <a th:href="@{/slack/install}" class="pixel-btn pixel-btn-cta">
+                <a th:href="@{/slack/install}" class="pixel-btn pixel-btn-cta" aria-label="Connect to Slack to get started">
                     &gt;&gt;&gt; Connect to Slack &lt;&lt;&lt;
                 </a>
             </div>
@@ -233,56 +264,56 @@
             <div class="pixel-divider"></div>
 
             <!-- Features - 8 in 2 rows -->
-            <div class="features-grid">
-                <div class="feature-compact">
-                    <span class="icon">♪</span>
+            <section class="features-grid" aria-label="Features">
+                <div class="feature-compact" role="listitem" aria-label="Auto-Sync: Spotify to Slack">
+                    <span class="icon" aria-hidden="true">♪</span>
                     <span class="label">Auto-Sync</span>
                     <span class="desc">Spotify to Slack</span>
                 </div>
-                <div class="feature-compact">
-                    <span class="icon">⚡</span>
+                <div class="feature-compact" role="listitem" aria-label="Real-Time: Live updates">
+                    <span class="icon" aria-hidden="true">⚡</span>
                     <span class="label">Real-Time</span>
                     <span class="desc">Live updates</span>
                 </div>
-                <div class="feature-compact">
-                    <span class="icon">►</span>
+                <div class="feature-compact" role="listitem" aria-label="Controls: Play and pause">
+                    <span class="icon" aria-hidden="true">►</span>
                     <span class="label">Controls</span>
                     <span class="desc">Play/pause</span>
                 </div>
-                <div class="feature-compact">
-                    <span class="icon">🎨</span>
+                <div class="feature-compact" role="listitem" aria-label="Custom Emoji: Pick your icon">
+                    <span class="icon" aria-hidden="true">🎨</span>
                     <span class="label">Custom Emoji</span>
                     <span class="desc">Pick your icon</span>
                 </div>
-                <div class="feature-compact">
-                    <span class="icon">🕐</span>
+                <div class="feature-compact" role="listitem" aria-label="Work Hours: Schedule sync">
+                    <span class="icon" aria-hidden="true">🕐</span>
                     <span class="label">Work Hours</span>
                     <span class="desc">Schedule sync</span>
                 </div>
-                <div class="feature-compact">
-                    <span class="icon">📱</span>
+                <div class="feature-compact" role="listitem" aria-label="Devices: Filter sources">
+                    <span class="icon" aria-hidden="true">📱</span>
                     <span class="label">Devices</span>
                     <span class="desc">Filter sources</span>
                 </div>
-                <div class="feature-compact">
-                    <span class="icon">✏️</span>
+                <div class="feature-compact" role="listitem" aria-label="Format: Artist and title">
+                    <span class="icon" aria-hidden="true">✏️</span>
                     <span class="label">Format</span>
                     <span class="desc">Artist &amp; title</span>
                 </div>
-                <div class="feature-compact">
-                    <span class="icon">🔔</span>
+                <div class="feature-compact" role="listitem" aria-label="Alerts: Notifications">
+                    <span class="icon" aria-hidden="true">🔔</span>
                     <span class="label">Alerts</span>
                     <span class="desc">Notifications</span>
                 </div>
-            </div>
+            </section>
 
             <!-- Dashed Divider -->
             <hr class="dashed-divider">
 
             <!-- Commands Section - All 8 in 2 columns -->
-            <div class="commands-section">
-                <h2>// Commands</h2>
-                <ul class="command-list">
+            <nav class="commands-section" aria-label="Slack commands">
+                <h2 id="commands-heading">// Commands</h2>
+                <ul class="command-list" aria-labelledby="commands-heading">
                     <li class="command-item">
                         <code>/statusbeat play</code><span>Resume playback</span>
                     </li>
@@ -308,8 +339,8 @@
                         <code>/statusbeat help</code><span>Show help</span>
                     </li>
                 </ul>
-            </div>
-        </div>
+            </nav>
+        </main>
 
         <!-- Status Bar -->
         <div class="window-status-bar">
