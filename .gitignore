@@ -66,3 +66,5 @@ application-local.properties
 application-dev.properties
 
 /slack_app_publish_to_rabbit-master/
+
+.claude/
