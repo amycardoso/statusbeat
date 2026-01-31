@@ -29,6 +29,9 @@ public class UserSettings {
     private boolean syncEnabled = true;
 
     @Builder.Default
+    private boolean syncActive = false;  // User must explicitly start sync
+
+    @Builder.Default
     private String defaultEmoji = ":musical_note:";
 
     @Builder.Default

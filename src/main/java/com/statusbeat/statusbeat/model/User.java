@@ -49,6 +49,9 @@ public class User {
 
     private boolean manualStatusSet; // Flag indicating user manually changed their status
 
+    @Builder.Default
+    private boolean statusCleared = true; // True when no StatusBeat status is set
+
     // Token invalidation tracking
     private boolean tokenInvalidated; // Flag indicating Slack or Spotify token has been revoked
 

@@ -107,8 +107,9 @@ public class AppHomeService {
                         ),
                         section(section -> section
                                 .text(markdownText(
-                                        String.format("*Status:* %s\n*Emoji:* %s\n*Show Artist:* %s\n*Show Title:* %s",
+                                        String.format("*Status:* %s\n*Sync:* %s\n*Emoji:* %s\n*Show Artist:* %s\n*Show Title:* %s",
                                                 settings.isSyncEnabled() ? ":white_check_mark: Enabled" : ":no_entry: Disabled",
+                                                getSyncStateDisplay(settings),
                                                 settings.getDefaultEmoji(),
                                                 settings.isShowArtist() ? "Yes" : "No",
                                                 settings.isShowSongTitle() ? "Yes" : "No"
@@ -215,18 +216,15 @@ public class AppHomeService {
                             )
                     ))
             );
-        } else {
+        } else if (!settings.isSyncEnabled()) {
+            // Sync is disabled - show enable button
             return actions(actions -> actions
                     .blockId("home_actions")
                     .elements(asElements(
                             button(button -> button
-                                    .actionId(settings.isSyncEnabled() ? "disable_sync" : "enable_sync")
-                                    .text(plainText(settings.isSyncEnabled() ? "Disable Sync" : "Enable Sync"))
-                                    .style(settings.isSyncEnabled() ? "danger" : "primary")
-                            ),
-                            button(button -> button
-                                    .actionId("manual_sync")
-                                    .text(plainText("Sync Now"))
+                                    .actionId("enable_sync")
+                                    .text(plainText("Enable Sync"))
+                                    .style("primary")
                             ),
                             button(button -> button
                                     .actionId("configure_emoji")
@@ -242,6 +240,44 @@ public class AppHomeService {
                             )
                     ))
             );
+        } else {
+            // Sync is enabled - show start/stop and disable buttons
+            return actions(actions -> actions
+                    .blockId("home_actions")
+                    .elements(asElements(
+                            button(button -> button
+                                    .actionId(settings.isSyncActive() ? "stop_sync" : "start_sync")
+                                    .text(plainText(settings.isSyncActive() ? "Stop Sync" : "Start Sync"))
+                                    .style(settings.isSyncActive() ? "danger" : "primary")
+                            ),
+                            button(button -> button
+                                    .actionId("disable_sync")
+                                    .text(plainText("Disable"))
+                            ),
+                            button(button -> button
+                                    .actionId("configure_emoji")
+                                    .text(plainText("Configure Emoji"))
+                            ),
+                            button(button -> button
+                                    .actionId("configure_working_hours")
+                                    .text(plainText("Working Hours"))
+                            ),
+                            button(button -> button
+                                    .actionId("configure_devices")
+                                    .text(plainText("Select Devices"))
+                            )
+                    ))
+            );
+        }
+    }
+
+    private String getSyncStateDisplay(UserSettings settings) {
+        if (!settings.isSyncEnabled()) {
+            return ":no_entry: Disabled";
+        } else if (settings.isSyncActive()) {
+            return ":arrow_forward: Syncing";
+        } else {
+            return ":double_vertical_bar: Paused";
         }
     }
 }

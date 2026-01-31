@@ -43,6 +43,8 @@ public class AppHomeHandler {
     @PostConstruct
     public void registerHandlers() {
         registerAppHomeOpenedEvent();
+        registerStartSyncAction();
+        registerStopSyncAction();
         registerEnableSyncAction();
         registerDisableSyncAction();
         registerManualSyncAction();
@@ -69,6 +71,48 @@ public class AppHomeHandler {
                 return ctx.ack();
             } catch (Exception e) {
                 log.error("Error handling app_home_opened event", e);
+                return ctx.ack();
+            }
+        });
+    }
+
+    private void registerStartSyncAction() {
+        slackApp.blockAction("start_sync", (req, ctx) -> {
+            try {
+                String userId = req.getPayload().getUser().getId();
+                log.info("User {} clicked Start Sync", userId);
+
+                Optional<User> userOpt = userService.findBySlackUserId(userId);
+                if (userOpt.isPresent()) {
+                    User user = userOpt.get();
+                    userService.startSync(user.getId());
+                    appHomeService.publishHomeView(userId, ctx.getBotToken());
+                }
+
+                return ctx.ack();
+            } catch (Exception e) {
+                log.error("Error handling start_sync action", e);
+                return ctx.ack();
+            }
+        });
+    }
+
+    private void registerStopSyncAction() {
+        slackApp.blockAction("stop_sync", (req, ctx) -> {
+            try {
+                String userId = req.getPayload().getUser().getId();
+                log.info("User {} clicked Stop Sync", userId);
+
+                Optional<User> userOpt = userService.findBySlackUserId(userId);
+                if (userOpt.isPresent()) {
+                    User user = userOpt.get();
+                    userService.stopSync(user.getId());
+                    appHomeService.publishHomeView(userId, ctx.getBotToken());
+                }
+
+                return ctx.ack();
+            } catch (Exception e) {
+                log.error("Error handling stop_sync action", e);
                 return ctx.ack();
             }
         });
