@@ -1,196 +1,885 @@
+/* ========================================
+   StatusBeat - 8-Bit Pixel Art Design System
+   ======================================== */
+
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&display=swap');
+
+/* ========================================
+   CSS Variables - CRT-Inspired Palette
+   ======================================== */
 :root {
-    --spotify-green: #1DB954;
-    --spotify-green-hover: #1ed760;
-    --slack-purple: #4A154B;
-    --error-red: #E22134;
-    --bg-dark: #121212;
-    --bg-card: #181818;
-    --text-white: #FFFFFF;
-    --text-gray: #B3B3B3;
-    --hover-bg: #282828;
+    /* Brand colors adapted for pixel art */
+    --pixel-green: #38B764;
+    --pixel-green-glow: #4ade80;
+    --pixel-purple: #5D3FD3;
+    --pixel-purple-dark: #4A154B;
+
+    /* Neutrals */
+    --pixel-black: #0F0F1B;
+    --pixel-dark: #1A1A2E;
+    --pixel-mid: #2D2D44;
+    --pixel-gray: #4A4A68;
+    --pixel-light-gray: #6B6B8D;
+    --pixel-white: #E8E8F0;
+
+    /* Accents */
+    --pixel-red: #E43B44;
+    --pixel-red-glow: #ff6b6b;
+    --pixel-yellow: #FEAE34;
+    --pixel-cyan: #3ABEFF;
+
+    /* Typography */
+    --font-pixel: 'Press Start 2P', monospace;
+    --font-body: 'VT323', monospace;
+    --font-ui: 'Silkscreen', monospace;
+
+    /* Spacing (8px grid) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 16px;
+    --space-4: 24px;
+    --space-5: 32px;
+    --space-6: 48px;
+
+    /* Border */
+    --border-pixel: 4px solid var(--pixel-gray);
 }
 
+/* ========================================
+   Reset & Base Styles
+   ======================================== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: var(--bg-dark);
-    color: var(--text-white);
-    line-height: 1.6;
-    min-height: 100vh;
+html {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
 }
 
-/* Container styles */
+body {
+    font-family: var(--font-body);
+    background: var(--pixel-black);
+    color: var(--pixel-white);
+    line-height: 1.6;
+    min-height: 100vh;
+    font-size: 20px;
+    overflow-x: hidden;
+}
+
+/* ========================================
+   CRT Screen Effect Overlay
+   ======================================== */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 0, 0, 0.15) 2px,
+            rgba(0, 0, 0, 0.15) 4px
+        );
+    pointer-events: none;
+    z-index: 9999;
+    animation: flicker 0.15s infinite;
+}
+
+@keyframes flicker {
+    0%, 100% { opacity: 0.97; }
+    50% { opacity: 1; }
+}
+
+/* Screen curvature vignette */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        ellipse at center,
+        transparent 0%,
+        transparent 60%,
+        rgba(0, 0, 0, 0.4) 100%
+    );
+    pointer-events: none;
+    z-index: 9998;
+}
+
+/* ========================================
+   Pixel Grid Background
+   ======================================== */
+.pixel-bg {
+    background-color: var(--pixel-black);
+    background-image:
+        linear-gradient(rgba(93, 63, 211, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(93, 63, 211, 0.03) 1px, transparent 1px);
+    background-size: 16px 16px;
+}
+
+/* ========================================
+   Retro Window Frame
+   ======================================== */
+.window-frame {
+    background: var(--pixel-dark);
+    border: 4px solid var(--pixel-gray);
+    box-shadow:
+        inset -4px -4px 0 var(--pixel-black),
+        inset 4px 4px 0 var(--pixel-mid),
+        8px 8px 0 rgba(0, 0, 0, 0.5);
+    max-width: 900px;
+    width: calc(100% - 32px);
+    margin: var(--space-5) auto;
+}
+
+.window-title-bar {
+    background: linear-gradient(90deg, var(--pixel-purple) 0%, var(--pixel-green) 100%);
+    padding: var(--space-2) var(--space-3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 4px solid var(--pixel-gray);
+}
+
+.window-title {
+    font-family: var(--font-ui);
+    font-size: 14px;
+    color: var(--pixel-white);
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.window-title-icon {
+    font-size: 16px;
+}
+
+.window-controls {
+    display: flex;
+    gap: var(--space-1);
+}
+
+.window-btn {
+    width: 20px;
+    height: 20px;
+    background: var(--pixel-mid);
+    border: 2px solid var(--pixel-gray);
+    font-family: var(--font-ui);
+    font-size: 10px;
+    color: var(--pixel-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    box-shadow:
+        inset -2px -2px 0 var(--pixel-black),
+        inset 2px 2px 0 var(--pixel-light-gray);
+}
+
+.window-content {
+    padding: var(--space-5);
+}
+
+.window-status-bar {
+    background: var(--pixel-mid);
+    padding: var(--space-2) var(--space-3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 4px solid var(--pixel-gray);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--pixel-light-gray);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--pixel-green);
+    animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.progress-bar-container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.progress-bar {
+    width: 100px;
+    height: 12px;
+    background: var(--pixel-dark);
+    border: 2px solid var(--pixel-gray);
+    padding: 2px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--pixel-green);
+    animation: progress 2s steps(10) infinite;
+}
+
+@keyframes progress {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+
+/* ========================================
+   Typography
+   ======================================== */
+h1, h2, h3 {
+    font-family: var(--font-pixel);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+h1 {
+    font-size: 20px;
+    line-height: 1.8;
+    margin-bottom: var(--space-3);
+}
+
+h2 {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: var(--space-3);
+}
+
+h3 {
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: var(--space-2);
+}
+
+p {
+    font-family: var(--font-body);
+    font-size: 22px;
+    color: var(--pixel-light-gray);
+    line-height: 1.5;
+    margin-bottom: var(--space-2);
+}
+
+/* Chromatic aberration text effect */
+.glitch-text {
+    position: relative;
+    text-shadow:
+        2px 0 var(--pixel-cyan),
+        -2px 0 var(--pixel-red);
+}
+
+/* ========================================
+   Logo
+   ======================================== */
+.logo {
+    font-family: var(--font-pixel);
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: var(--space-4);
+    color: var(--pixel-white);
+    text-shadow:
+        4px 4px 0 var(--pixel-purple),
+        -2px -2px 0 var(--pixel-green);
+}
+
+.logo-small {
+    font-size: 16px;
+}
+
+/* ========================================
+   Pixel Buttons
+   ======================================== */
+.pixel-btn {
+    font-family: var(--font-pixel);
+    font-size: 12px;
+    padding: var(--space-3) var(--space-4);
+    background: var(--pixel-green);
+    color: var(--pixel-black);
+    border: 4px solid var(--pixel-gray);
+    text-decoration: none;
+    text-transform: uppercase;
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    box-shadow:
+        inset -4px -4px 0 #2a8f4f,
+        inset 4px 4px 0 #4ade80,
+        4px 4px 0 var(--pixel-black);
+    transition: none;
+}
+
+.pixel-btn:hover {
+    transform: translate(2px, 2px);
+    box-shadow:
+        inset -4px -4px 0 #2a8f4f,
+        inset 4px 4px 0 #4ade80,
+        2px 2px 0 var(--pixel-black);
+}
+
+.pixel-btn:active {
+    transform: translate(4px, 4px);
+    box-shadow:
+        inset -4px -4px 0 #4ade80,
+        inset 4px 4px 0 #2a8f4f;
+}
+
+.pixel-btn-secondary {
+    background: var(--pixel-purple);
+    box-shadow:
+        inset -4px -4px 0 #4A154B,
+        inset 4px 4px 0 #7c5ce7,
+        4px 4px 0 var(--pixel-black);
+}
+
+.pixel-btn-secondary:hover {
+    box-shadow:
+        inset -4px -4px 0 #4A154B,
+        inset 4px 4px 0 #7c5ce7,
+        2px 2px 0 var(--pixel-black);
+}
+
+/* Large CTA button with animation */
+.pixel-btn-cta {
+    font-size: 14px;
+    padding: var(--space-4) var(--space-5);
+    animation: pulse-btn 1s steps(2) infinite;
+}
+
+@keyframes pulse-btn {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.1); }
+}
+
+/* ========================================
+   Pixel Cards
+   ======================================== */
+.pixel-card {
+    background: var(--pixel-mid);
+    border: 4px solid var(--pixel-gray);
+    padding: var(--space-3);
+    box-shadow:
+        inset -4px -4px 0 var(--pixel-black),
+        inset 4px 4px 0 var(--pixel-gray);
+    position: relative;
+}
+
+.pixel-card-highlight {
+    border-color: var(--pixel-green);
+}
+
+.pixel-card::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--pixel-purple), var(--pixel-green));
+}
+
+/* ========================================
+   Feature Grid
+   ======================================== */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-3);
+    margin: var(--space-4) 0;
+}
+
+.feature-card {
+    background: var(--pixel-mid);
+    border: 4px solid var(--pixel-gray);
+    padding: var(--space-3);
+    text-align: center;
+    transition: none;
+}
+
+.feature-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--pixel-black);
+    border-color: var(--pixel-green);
+}
+
+.feature-icon {
+    font-size: 32px;
+    margin-bottom: var(--space-2);
+    display: block;
+}
+
+.feature-card h3 {
+    font-family: var(--font-ui);
+    font-size: 14px;
+    color: var(--pixel-green);
+    margin-bottom: var(--space-2);
+}
+
+.feature-card p {
+    font-size: 18px;
+    color: var(--pixel-light-gray);
+}
+
+/* ========================================
+   Commands Section
+   ======================================== */
+.commands-section {
+    background: var(--pixel-dark);
+    border: 4px solid var(--pixel-gray);
+    padding: var(--space-4);
+    margin: var(--space-4) 0;
+}
+
+.commands-section h2 {
+    font-family: var(--font-pixel);
+    font-size: 12px;
+    color: var(--pixel-yellow);
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 2px dashed var(--pixel-gray);
+}
+
+.command-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-2);
+}
+
+.command-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    background: var(--pixel-mid);
+    border-left: 4px solid var(--pixel-green);
+}
+
+.command-item:hover {
+    border-left-color: var(--pixel-purple);
+    background: var(--pixel-gray);
+}
+
+.command-item code {
+    font-family: var(--font-body);
+    font-size: 20px;
+    color: var(--pixel-green);
+    background: var(--pixel-dark);
+    padding: var(--space-1) var(--space-2);
+    border: 2px solid var(--pixel-gray);
+}
+
+.command-item span {
+    font-family: var(--font-body);
+    font-size: 18px;
+    color: var(--pixel-light-gray);
+}
+
+/* ========================================
+   Pixel Equalizer Animation
+   ======================================== */
+.equalizer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    height: 40px;
+    margin: var(--space-3) 0;
+}
+
+.eq-bar {
+    width: 8px;
+    background: var(--pixel-green);
+    animation: eq-bounce 0.5s steps(4) infinite alternate;
+}
+
+.eq-bar:nth-child(1) { animation-delay: 0s; height: 20px; }
+.eq-bar:nth-child(2) { animation-delay: 0.1s; height: 32px; }
+.eq-bar:nth-child(3) { animation-delay: 0.2s; height: 24px; }
+.eq-bar:nth-child(4) { animation-delay: 0.15s; height: 36px; }
+.eq-bar:nth-child(5) { animation-delay: 0.05s; height: 28px; }
+.eq-bar:nth-child(6) { animation-delay: 0.25s; height: 16px; }
+.eq-bar:nth-child(7) { animation-delay: 0.1s; height: 40px; }
+
+@keyframes eq-bounce {
+    0% { transform: scaleY(0.3); }
+    100% { transform: scaleY(1); }
+}
+
+/* ========================================
+   CSS Pixel Sprites
+   ======================================== */
+
+/* Music Note Sprite */
+.pixel-note {
+    width: 16px;
+    height: 16px;
+    position: relative;
+    display: inline-block;
+}
+
+.pixel-note::before {
+    content: "";
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--pixel-green);
+    box-shadow:
+        4px 0 0 var(--pixel-green),
+        8px 0 0 var(--pixel-green),
+        8px 4px 0 var(--pixel-green),
+        8px 8px 0 var(--pixel-green),
+        0 4px 0 var(--pixel-green),
+        0 8px 0 var(--pixel-green),
+        4px 12px 0 var(--pixel-green),
+        0 12px 0 var(--pixel-green);
+}
+
+/* Checkmark Sprite */
+.pixel-check {
+    width: 32px;
+    height: 32px;
+    position: relative;
+    display: inline-block;
+    margin: var(--space-3) 0;
+}
+
+.pixel-check::before {
+    content: "";
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--pixel-green);
+    box-shadow:
+        4px -4px 0 var(--pixel-green),
+        8px -8px 0 var(--pixel-green),
+        12px -12px 0 var(--pixel-green),
+        16px -16px 0 var(--pixel-green),
+        -4px -4px 0 var(--pixel-green),
+        -8px -8px 0 var(--pixel-green);
+    left: 8px;
+    top: 24px;
+    animation: check-pop 0.5s steps(1) forwards;
+}
+
+@keyframes check-pop {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+
+/* X Icon Sprite */
+.pixel-x {
+    width: 32px;
+    height: 32px;
+    position: relative;
+    display: inline-block;
+    margin: var(--space-3) 0;
+}
+
+.pixel-x::before {
+    content: "";
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--pixel-red);
+    box-shadow:
+        4px 4px 0 var(--pixel-red),
+        8px 8px 0 var(--pixel-red),
+        12px 12px 0 var(--pixel-red),
+        16px 16px 0 var(--pixel-red),
+        20px 20px 0 var(--pixel-red),
+        20px 0 0 var(--pixel-red),
+        16px 4px 0 var(--pixel-red),
+        12px 8px 0 var(--pixel-red),
+        8px 12px 0 var(--pixel-red),
+        4px 16px 0 var(--pixel-red),
+        0 20px 0 var(--pixel-red);
+    left: 4px;
+    top: 4px;
+    animation: shake-pixel 0.5s steps(2);
+}
+
+@keyframes shake-pixel {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+/* ========================================
+   Success Page Styles
+   ======================================== */
+.success-screen {
+    text-align: center;
+}
+
+.success-screen h1 {
+    color: var(--pixel-green);
+    text-shadow:
+        2px 2px 0 var(--pixel-black),
+        0 0 20px var(--pixel-green-glow);
+    animation: success-glow 1s steps(2) infinite;
+}
+
+@keyframes success-glow {
+    0%, 100% { filter: drop-shadow(0 0 10px var(--pixel-green)); }
+    50% { filter: drop-shadow(0 0 20px var(--pixel-green-glow)); }
+}
+
+/* Pixel Confetti */
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 100;
+}
+
+.confetti {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    animation: confetti-fall 3s steps(20) forwards;
+}
+
+@keyframes confetti-fall {
+    0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ========================================
+   Error Page Styles
+   ======================================== */
+.error-screen {
+    text-align: center;
+}
+
+.error-screen h1 {
+    color: var(--pixel-red);
+    text-shadow:
+        2px 2px 0 var(--pixel-black),
+        0 0 20px var(--pixel-red-glow);
+}
+
+/* Static noise effect */
+.static-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.1'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9997;
+    animation: static-flicker 0.1s steps(1) infinite;
+    opacity: 0.3;
+}
+
+@keyframes static-flicker {
+    0% { opacity: 0.2; }
+    50% { opacity: 0.4; }
+    100% { opacity: 0.25; }
+}
+
+.error-message-box {
+    background: var(--pixel-mid);
+    border: 4px solid var(--pixel-red);
+    padding: var(--space-3);
+    margin: var(--space-3) 0;
+    text-align: left;
+    position: relative;
+}
+
+.error-message-box::before {
+    content: "! ERROR";
+    position: absolute;
+    top: -12px;
+    left: var(--space-2);
+    background: var(--pixel-dark);
+    padding: 0 var(--space-2);
+    font-family: var(--font-pixel);
+    font-size: 10px;
+    color: var(--pixel-red);
+}
+
+.error-message-box p {
+    font-family: var(--font-body);
+    font-size: 18px;
+    color: var(--pixel-white);
+    margin: 0;
+}
+
+/* ========================================
+   OAuth Flow / Steps
+   ======================================== */
+.oauth-steps {
+    background: var(--pixel-mid);
+    border: 4px solid var(--pixel-gray);
+    padding: var(--space-3);
+    margin: var(--space-3) 0;
+}
+
+.step-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) 0;
+    border-bottom: 2px dashed var(--pixel-gray);
+}
+
+.step-item:last-child {
+    border-bottom: none;
+}
+
+.step-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.step-complete .step-icon {
+    color: var(--pixel-green);
+}
+
+.step-pending .step-icon {
+    color: var(--pixel-yellow);
+    animation: blink 0.5s steps(1) infinite;
+}
+
+.step-text {
+    font-family: var(--font-body);
+    font-size: 20px;
+}
+
+.step-text strong {
+    color: var(--pixel-white);
+}
+
+/* Pixel Progress Bar */
+.pixel-progress {
+    width: 100%;
+    height: 20px;
+    background: var(--pixel-dark);
+    border: 4px solid var(--pixel-gray);
+    margin: var(--space-3) 0;
+    position: relative;
+}
+
+.pixel-progress-fill {
+    height: 100%;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--pixel-purple) 0px,
+        var(--pixel-purple) 8px,
+        var(--pixel-green) 8px,
+        var(--pixel-green) 16px
+    );
+    transition: width 0.3s steps(10);
+}
+
+/* ========================================
+   Centered Container
+   ======================================== */
 .centered-container {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: var(--space-4);
 }
 
+/* Legacy card support */
 .card {
-    background: var(--bg-card);
-    border-radius: 16px;
-    padding: 48px 40px;
+    background: var(--pixel-dark);
+    border: 4px solid var(--pixel-gray);
+    padding: var(--space-5);
     max-width: 500px;
     width: 100%;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    animation: fadeIn 0.6s ease-out;
+    box-shadow:
+        inset -4px -4px 0 var(--pixel-black),
+        inset 4px 4px 0 var(--pixel-mid),
+        8px 8px 0 rgba(0, 0, 0, 0.5);
 }
 
-/* Logo */
-.logo {
-    font-size: 48px;
-    font-weight: 900;
-    margin-bottom: 16px;
-    background: linear-gradient(135deg, var(--spotify-green) 0%, var(--slack-purple) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -2px;
+/* ========================================
+   Cursor Blink Animation
+   ======================================== */
+.cursor-blink::after {
+    content: "_";
+    animation: cursor 0.5s steps(1) infinite;
 }
 
-.logo-icon {
-    display: inline-block;
-    margin-right: 8px;
+@keyframes cursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
 }
 
-/* Icons */
-.icon-large {
-    font-size: 64px;
-    margin-bottom: 24px;
+/* ========================================
+   Dividers
+   ======================================== */
+.pixel-divider {
+    height: 4px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--pixel-purple) 0px,
+        var(--pixel-purple) 8px,
+        var(--pixel-green) 8px,
+        var(--pixel-green) 16px
+    );
+    margin: var(--space-4) 0;
 }
 
-.success-icon {
-    animation: scaleIn 0.5s ease-out 0.3s both;
+.dashed-divider {
+    border: none;
+    border-top: 4px dashed var(--pixel-gray);
+    margin: var(--space-4) 0;
 }
 
-.error-icon {
-    animation: shake 0.5s ease-out 0.2s both;
-}
-
-/* Headings */
-h1 {
-    font-size: 28px;
-    margin-bottom: 16px;
-    font-weight: 900;
-}
-
-h1.success-title {
-    color: var(--spotify-green);
-}
-
-h1.error-title {
-    color: var(--error-red);
-}
-
-h1.gradient-title {
-    background: linear-gradient(135deg, var(--spotify-green) 0%, var(--slack-purple) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-/* Paragraphs */
-p {
-    color: var(--text-gray);
-    line-height: 1.6;
-    margin-bottom: 12px;
-    font-size: 15px;
-}
-
-/* Message boxes */
-.message-box {
-    padding: 16px;
-    border-radius: 8px;
-    margin: 24px 0;
-    text-align: left;
-}
-
-.message-box p {
-    color: var(--text-white);
-    margin: 0;
-}
-
-.error-message {
-    background: rgba(226, 33, 52, 0.1);
-    border-left: 4px solid var(--error-red);
-}
-
-.error-message p {
-    font-family: monospace;
-    font-size: 14px;
-}
-
-.success-steps {
-    background: rgba(29, 185, 84, 0.1);
-    border-left: 4px solid var(--spotify-green);
-    padding: 20px;
-}
-
-.step {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    color: var(--text-white);
-    font-size: 15px;
-}
-
-.step:last-child {
-    margin-bottom: 0;
-}
-
-.step-icon {
-    margin-right: 12px;
-    font-size: 20px;
-    min-width: 24px;
-}
-
-/* Buttons */
-.button, .cta-button {
-    display: inline-block;
-    padding: 14px 32px;
-    background: var(--spotify-green);
-    color: var(--text-white);
-    text-decoration: none;
-    border-radius: 500px;
-    margin-top: 24px;
-    font-weight: 700;
-    font-size: 14px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 24px rgba(29, 185, 84, 0.3);
-}
-
-.button:hover, .cta-button:hover {
-    background: var(--spotify-green-hover);
-    transform: scale(1.05);
-    box-shadow: 0 12px 32px rgba(29, 185, 84, 0.4);
-}
-
-/* Code */
+/* ========================================
+   Code Styling
+   ======================================== */
 code {
-    background: rgba(29, 185, 84, 0.1);
-    color: var(--spotify-green);
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-    font-size: 14px;
+    font-family: var(--font-body);
+    font-size: 20px;
+    color: var(--pixel-green);
+    background: var(--pixel-dark);
+    padding: var(--space-1) var(--space-2);
+    border: 2px solid var(--pixel-gray);
 }
 
-/* Animations */
+/* ========================================
+   Animations
+   ======================================== */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(8px);
     }
     to {
         opacity: 1;
@@ -198,36 +887,169 @@ code {
     }
 }
 
-@keyframes scaleIn {
-    from {
-        transform: scale(0);
-    }
-    to {
-        transform: scale(1);
-    }
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
 }
 
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-10px); }
-    75% { transform: translateX(10px); }
+.animate-in {
+    animation: fadeIn 0.3s steps(4) forwards;
 }
 
-/* Responsive Design */
+/* ========================================
+   Subtitle / Tagline
+   ======================================== */
+.subtitle {
+    font-family: var(--font-body);
+    font-size: 24px;
+    color: var(--pixel-light-gray);
+    text-align: center;
+    margin-bottom: var(--space-4);
+}
+
+.subtitle::before,
+.subtitle::after {
+    content: " > ";
+    color: var(--pixel-green);
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
 @media (max-width: 768px) {
-    .card {
-        padding: 32px 24px;
-    }
-
-    .logo {
-        font-size: 40px;
+    body {
+        font-size: 18px;
     }
 
     h1 {
-        font-size: 24px;
+        font-size: 14px;
     }
 
-    .icon-large {
-        font-size: 56px;
+    h2 {
+        font-size: 12px;
     }
+
+    .logo {
+        font-size: 16px;
+    }
+
+    .window-frame {
+        margin: var(--space-2);
+        width: calc(100% - 16px);
+    }
+
+    .window-content {
+        padding: var(--space-3);
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .command-list {
+        grid-template-columns: 1fr;
+    }
+
+    .pixel-btn {
+        font-size: 10px;
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .pixel-btn-cta {
+        font-size: 12px;
+        padding: var(--space-3) var(--space-4);
+    }
+
+    .card {
+        padding: var(--space-4);
+    }
+}
+
+/* ========================================
+   Button Compatibility (Legacy)
+   ======================================== */
+.button, .cta-button {
+    font-family: var(--font-pixel);
+    font-size: 12px;
+    padding: var(--space-3) var(--space-4);
+    background: var(--pixel-green);
+    color: var(--pixel-black);
+    border: 4px solid var(--pixel-gray);
+    text-decoration: none;
+    text-transform: uppercase;
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    box-shadow:
+        inset -4px -4px 0 #2a8f4f,
+        inset 4px 4px 0 #4ade80,
+        4px 4px 0 var(--pixel-black);
+    transition: none;
+    margin-top: var(--space-3);
+    border-radius: 0;
+}
+
+.button:hover, .cta-button:hover {
+    transform: translate(2px, 2px);
+    box-shadow:
+        inset -4px -4px 0 #2a8f4f,
+        inset 4px 4px 0 #4ade80,
+        2px 2px 0 var(--pixel-black);
+}
+
+/* Icon large (legacy) */
+.icon-large {
+    font-size: 48px;
+    margin-bottom: var(--space-3);
+    display: block;
+}
+
+/* Success/Error titles (legacy) */
+h1.success-title {
+    color: var(--pixel-green);
+    text-shadow: 2px 2px 0 var(--pixel-black);
+}
+
+h1.error-title {
+    color: var(--pixel-red);
+    text-shadow: 2px 2px 0 var(--pixel-black);
+}
+
+h1.gradient-title {
+    background: linear-gradient(90deg, var(--pixel-green), var(--pixel-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Message boxes (legacy) */
+.message-box {
+    background: var(--pixel-mid);
+    border: 4px solid var(--pixel-gray);
+    padding: var(--space-3);
+    margin: var(--space-3) 0;
+    text-align: left;
+}
+
+.error-message {
+    border-color: var(--pixel-red);
+    border-left-width: 4px;
+}
+
+.success-steps {
+    border-color: var(--pixel-green);
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) 0;
+    font-family: var(--font-body);
+    font-size: 20px;
+    color: var(--pixel-white);
+}
+
+.step-icon {
+    font-size: 18px;
 }
