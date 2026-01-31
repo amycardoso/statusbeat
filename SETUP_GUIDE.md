@@ -33,13 +33,13 @@ java -version
 **Option A: Local (macOS)**
 ```bash
 brew tap mongodb/brew
-brew install mongodb-community@7.0
-brew services start mongodb-community@7.0
+brew install mongodb-community@8.0
+brew services start mongodb-community@8.0
 ```
 
 **Option B: Docker**
 ```bash
-docker run -d -p 27017:27017 --name statusbeat-mongodb mongo:7.0
+docker run -d -p 27017:27017 --name statusbeat-mongodb mongo:8.0
 ```
 
 **Option C: MongoDB Atlas**
@@ -172,7 +172,7 @@ echo $SLACK_CLIENT_ID  # Verify env vars
 
 **MongoDB issues:**
 ```bash
-brew services start mongodb-community@7.0
+brew services start mongodb-community@8.0
 ```
 
 For MongoDB Atlas: whitelist your IP in Network Access.

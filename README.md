@@ -2,7 +2,7 @@
 
 ![Java](https://img.shields.io/badge/Java-25-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.7-brightgreen)
-![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green)
+![MongoDB](https://img.shields.io/badge/MongoDB-8.0-green)
 ![Slack API](https://img.shields.io/badge/Slack-API-4A154B)
 ![Spotify API](https://img.shields.io/badge/Spotify-API-1DB954)
 ![License](https://img.shields.io/badge/license-MIT-blue)
