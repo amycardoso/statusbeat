@@ -14,10 +14,6 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/**
- * Security-focused tests for encryption implementation.
- * Verifies AES-256 encryption, IV randomness, and key derivation.
- */
 @DisplayName("Encryption Security Tests")
 class EncryptionSecurityTest {
 
@@ -40,10 +36,7 @@ class EncryptionSecurityTest {
             String testData = "test-token";
             String encrypted = encryptionUtil.encrypt(testData);
 
-            // Verify encryption is happening
             assertThat(encrypted).isNotEqualTo(testData);
-
-            // Verify round-trip works
             String decrypted = encryptionUtil.decrypt(encrypted);
             assertThat(decrypted).isEqualTo(testData);
         }
@@ -55,18 +48,12 @@ class EncryptionSecurityTest {
             String encrypted = encryptionUtil.encrypt(testData);
 
             byte[] decoded = Base64.getDecoder().decode(encrypted);
-
-            // AES CBC uses 16-byte IV
-            assertThat(decoded.length).isGreaterThanOrEqualTo(16);
-
-            // Minimum: 16 bytes IV + 16 bytes block (with padding)
             assertThat(decoded.length).isGreaterThanOrEqualTo(32);
         }
 
         @Test
         @DisplayName("should use PKCS5 padding")
         void shouldUsePkcs5Padding() {
-            // Test various input lengths to verify padding works
             for (int len = 1; len <= 32; len++) {
                 String testData = "x".repeat(len);
                 String encrypted = encryptionUtil.encrypt(testData);
@@ -86,13 +73,9 @@ class EncryptionSecurityTest {
         void shouldGenerateUniqueIvForEachEncryption() {
             String testData = "same-data";
             Set<String> encryptedResults = new HashSet<>();
-
-            // Encrypt same data 1000 times
             for (int i = 0; i < 1000; i++) {
                 encryptedResults.add(encryptionUtil.encrypt(testData));
             }
-
-            // All results should be unique due to random IV
             assertThat(encryptedResults).hasSize(1000);
         }
 
@@ -101,8 +84,6 @@ class EncryptionSecurityTest {
         void shouldUseCryptographicallySecureRandomIv() {
             String testData = "test-data";
             Set<String> ivSet = new HashSet<>();
-
-            // Extract first 16 bytes (IV) from multiple encryptions
             for (int i = 0; i < 100; i++) {
                 String encrypted = encryptionUtil.encrypt(testData);
                 byte[] decoded = Base64.getDecoder().decode(encrypted);
@@ -110,8 +91,6 @@ class EncryptionSecurityTest {
                 System.arraycopy(decoded, 0, iv, 0, 16);
                 ivSet.add(Base64.getEncoder().encodeToString(iv));
             }
-
-            // All IVs should be unique
             assertThat(ivSet).hasSize(100);
         }
 
@@ -121,20 +100,13 @@ class EncryptionSecurityTest {
             String testData = "test-data";
             String encrypted = encryptionUtil.encrypt(testData);
             byte[] decoded = Base64.getDecoder().decode(encrypted);
-
-            // Corrupt the IV (first 16 bytes)
             decoded[0] ^= 0xFF;
-
             String corrupted = Base64.getEncoder().encodeToString(decoded);
 
-            // With AES-CBC (non-authenticated), corrupting IV produces garbage output
-            // rather than throwing an exception. We verify the output is different.
             try {
                 String decrypted = encryptionUtil.decrypt(corrupted);
-                // If decryption succeeds, verify output is corrupted (not the original)
                 assertThat(decrypted).isNotEqualTo(testData);
             } catch (RuntimeException e) {
-                // If decryption fails, that's also acceptable behavior
                 assertThat(e).isNotNull();
             }
         }
@@ -147,10 +119,6 @@ class EncryptionSecurityTest {
         @Test
         @DisplayName("should use PBKDF2 with 65536 iterations")
         void shouldUsePbkdf2With65536Iterations() {
-            // The implementation uses PBKDF2WithHmacSHA256 with 65536 iterations
-            // This is verified by the fact that encryption/decryption works correctly
-            // and produces consistent results
-
             String testData = "test-token";
             String encrypted = encryptionUtil.encrypt(testData);
             String decrypted = encryptionUtil.decrypt(encrypted);
@@ -169,9 +137,6 @@ class EncryptionSecurityTest {
             ReflectionTestUtils.setField(otherUtil, "secretKeyString", "different-secret-key");
 
             String encrypted2 = otherUtil.encrypt(testData);
-
-            // Even without IV consideration, the encryption bases would differ
-            // But due to random IV, this test really verifies key independence
             assertThat(encrypted1).isNotEqualTo(encrypted2);
         }
 
@@ -181,7 +146,6 @@ class EncryptionSecurityTest {
             String testData = "sensitive-token";
             String encrypted = encryptionUtil.encrypt(testData);
 
-            // Create new instance with different key
             EncryptionUtil wrongKeyUtil = new EncryptionUtil();
             ReflectionTestUtils.setField(wrongKeyUtil, "secretKeyString", "wrong-key-attempt");
 
@@ -201,8 +165,6 @@ class EncryptionSecurityTest {
             String testData = "test-token";
             String encrypted = encryptionUtil.encrypt(testData);
             byte[] decoded = Base64.getDecoder().decode(encrypted);
-
-            // Flip a bit in the ciphertext (after IV)
             decoded[20] ^= 0x01;
 
             String tampered = Base64.getEncoder().encodeToString(decoded);
@@ -217,8 +179,6 @@ class EncryptionSecurityTest {
             String testData = "test-token";
             String encrypted = encryptionUtil.encrypt(testData);
             byte[] decoded = Base64.getDecoder().decode(encrypted);
-
-            // Truncate the ciphertext
             byte[] truncated = new byte[decoded.length - 5];
             System.arraycopy(decoded, 0, truncated, 0, truncated.length);
 
@@ -234,8 +194,6 @@ class EncryptionSecurityTest {
             String testData = "test-token";
             String encrypted = encryptionUtil.encrypt(testData);
             byte[] decoded = Base64.getDecoder().decode(encrypted);
-
-            // Extend the ciphertext
             byte[] extended = new byte[decoded.length + 5];
             System.arraycopy(decoded, 0, extended, 0, decoded.length);
 
@@ -264,10 +222,7 @@ class EncryptionSecurityTest {
             String spotifyToken = "BQDnV0x1234567890abcdefghijklmnopqrstuvwxyz";
             String encrypted = encryptionUtil.encrypt(spotifyToken);
 
-            // Encrypted token should not contain original token
             assertThat(encrypted).doesNotContain("BQD");
-
-            // Should be able to decrypt back
             String decrypted = encryptionUtil.decrypt(encrypted);
             assertThat(decrypted).isEqualTo(spotifyToken);
         }
@@ -287,7 +242,6 @@ class EncryptionSecurityTest {
         @Test
         @DisplayName("should handle very long tokens")
         void shouldHandleVeryLongTokens() {
-            // JWT tokens can be quite long
             String longToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9." +
                     "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QiLCJpYXQiOjE1MTYyMzkwMjJ9." +
                     "signature_here_would_be_very_long_in_real_life_".repeat(10);
@@ -309,7 +263,6 @@ class EncryptionSecurityTest {
             String testData = "secret-token-xyz";
             String encrypted = encryptionUtil.encrypt(testData);
 
-            // Corrupt the ciphertext
             byte[] decoded = Base64.getDecoder().decode(encrypted);
             decoded[decoded.length - 1] ^= 0xFF;
             String corrupted = Base64.getEncoder().encodeToString(decoded);
@@ -317,7 +270,6 @@ class EncryptionSecurityTest {
             try {
                 encryptionUtil.decrypt(corrupted);
             } catch (RuntimeException e) {
-                // Error message should not contain the original data
                 assertThat(e.getMessage()).doesNotContain("secret-token");
                 assertThat(e.getMessage()).doesNotContain(testData);
             }

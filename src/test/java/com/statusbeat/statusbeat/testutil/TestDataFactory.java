@@ -9,17 +9,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Factory class for creating test data objects.
- * Provides builders and default values for commonly used test entities.
- */
 public final class TestDataFactory {
 
-    private TestDataFactory() {
-        // Prevent instantiation
-    }
-
-    // ============== User Factory Methods ==============
+    private TestDataFactory() {}
 
     public static User createUser() {
         return createUser("U" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
@@ -81,8 +73,6 @@ public final class TestDataFactory {
         return user;
     }
 
-    // ============== UserSettings Factory Methods ==============
-
     public static UserSettings createUserSettings(String userId) {
         return UserSettings.builder()
                 .id(UUID.randomUUID().toString())
@@ -121,8 +111,6 @@ public final class TestDataFactory {
         return settings;
     }
 
-    // ============== CurrentlyPlayingTrackInfo Factory Methods ==============
-
     public static CurrentlyPlayingTrackInfo createTrackInfo() {
         return createTrackInfo("track-123", "Test Song", "Test Artist");
     }
@@ -153,8 +141,6 @@ public final class TestDataFactory {
         return track;
     }
 
-    // ============== OAuthState Factory Methods ==============
-
     public static OAuthState createOAuthState() {
         return createOAuthState(UUID.randomUUID().toString());
     }
@@ -172,8 +158,6 @@ public final class TestDataFactory {
         oauthState.setExpiresAt(LocalDateTime.now().minusMinutes(1));
         return oauthState;
     }
-
-    // ============== Token Factory Methods ==============
 
     public static String createSpotifyAccessToken() {
         return "BQD" + UUID.randomUUID().toString().replace("-", "");

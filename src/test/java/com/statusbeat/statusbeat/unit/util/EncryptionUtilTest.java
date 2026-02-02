@@ -13,10 +13,6 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 
-/**
- * Unit tests for EncryptionUtil.
- * Tests AES-256 encryption/decryption functionality.
- */
 @DisplayName("EncryptionUtil")
 class EncryptionUtilTest {
 
@@ -52,7 +48,6 @@ class EncryptionUtilTest {
 
             String encrypted = encryptionUtil.encrypt(plainText);
 
-            // Should be valid Base64
             assertThatCode(() -> Base64.getDecoder().decode(encrypted))
                     .doesNotThrowAnyException();
         }
@@ -75,8 +70,6 @@ class EncryptionUtilTest {
 
             String encrypted = encryptionUtil.encrypt(plainText);
             byte[] decoded = Base64.getDecoder().decode(encrypted);
-
-            // Output should be at least 16 bytes (IV) + 16 bytes (minimum block size with padding)
             assertThat(decoded.length).isGreaterThanOrEqualTo(32);
         }
 
@@ -195,9 +188,8 @@ class EncryptionUtilTest {
             String originalText = "my-secret-token";
             String encrypted = encryptionUtil.encrypt(originalText);
 
-            // Tamper with the encrypted data
             byte[] decoded = Base64.getDecoder().decode(encrypted);
-            decoded[decoded.length - 1] ^= 0xFF; // Flip bits in last byte
+            decoded[decoded.length - 1] ^= 0xFF;
             String tampered = Base64.getEncoder().encodeToString(decoded);
 
             assertThatThrownBy(() -> encryptionUtil.decrypt(tampered))
@@ -211,7 +203,6 @@ class EncryptionUtilTest {
             String originalText = "my-secret-token";
             String encrypted = encryptionUtil.encrypt(originalText);
 
-            // Truncate to less than IV size (16 bytes)
             byte[] decoded = Base64.getDecoder().decode(encrypted);
             byte[] truncated = new byte[10];
             System.arraycopy(decoded, 0, truncated, 0, 10);
@@ -259,8 +250,6 @@ class EncryptionUtilTest {
                 String encrypted = encryptionUtil.encrypt(plainText);
                 encryptedSet.add(encrypted);
             }
-
-            // All 100 encryptions should be unique due to random IV
             assertThat(encryptedSet).hasSize(100);
         }
     }

@@ -9,10 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
-/**
- * Base class for integration tests.
- * Provides common setup with embedded MongoDB and Spring context.
- */
 @SpringBootTest
 @ActiveProfiles("test")
 @Import(TestConfig.class)
@@ -29,7 +25,6 @@ public abstract class IntegrationTestBase {
 
     @BeforeEach
     void cleanDatabase() {
-        // Clean all collections before each test
         userSettingsRepository.deleteAll();
         oauthStateRepository.deleteAll();
         userRepository.deleteAll();
