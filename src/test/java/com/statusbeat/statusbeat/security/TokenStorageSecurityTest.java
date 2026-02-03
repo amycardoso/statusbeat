@@ -154,8 +154,8 @@ class TokenStorageSecurityTest extends IntegrationTestBase {
 
             byte[] decoded = Base64.getDecoder().decode(savedUser.getEncryptedSpotifyAccessToken());
 
-            // IV is 16 bytes + at least one block of encrypted data (16 bytes with padding)
-            assertThat(decoded.length).isGreaterThanOrEqualTo(32);
+            // GCM format: 12-byte IV + 10-byte ciphertext for "test-token" + 16-byte auth tag = 38 bytes
+            assertThat(decoded.length).isEqualTo(38);
         }
     }
 

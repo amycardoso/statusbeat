@@ -64,13 +64,14 @@ class EncryptionUtilTest {
         }
 
         @Test
-        @DisplayName("should produce output longer than 16 bytes (IV + encrypted data)")
-        void shouldProduceOutputLongerThan16Bytes() {
+        @DisplayName("should produce output with IV and auth tag (GCM format)")
+        void shouldProduceOutputWithIvAndAuthTag() {
             String plainText = "x"; // Minimal input
 
             String encrypted = encryptionUtil.encrypt(plainText);
             byte[] decoded = Base64.getDecoder().decode(encrypted);
-            assertThat(decoded.length).isGreaterThanOrEqualTo(32);
+            // GCM format: 12-byte IV + ciphertext (1 byte) + 16-byte auth tag = 29 bytes minimum
+            assertThat(decoded.length).isGreaterThanOrEqualTo(29);
         }
 
         @Test
