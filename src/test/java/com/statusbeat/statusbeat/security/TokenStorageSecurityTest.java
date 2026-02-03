@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -206,27 +207,31 @@ class TokenStorageSecurityTest extends IntegrationTestBase {
     class SlackTokenHandlingTests {
 
         @Test
-        @DisplayName("should store Slack access token")
-        void shouldStoreSlackAccessToken() {
+        @DisplayName("should encrypt Slack access token before storage")
+        void shouldEncryptSlackAccessToken() {
             User user = TestDataFactory.createUser();
-            user.setSlackAccessToken("xoxp-test-slack-token");
+            String plainToken = "xoxp-test-slack-token";
+            user.setSlackAccessToken(plainToken);
             user = userRepository.save(user);
 
             User savedUser = userRepository.findById(user.getId()).orElseThrow();
 
-            assertThat(savedUser.getSlackAccessToken()).isEqualTo("xoxp-test-slack-token");
+            assertThat(savedUser.getSlackAccessToken()).isNotNull();
+            assertThat(savedUser.getSlackAccessToken()).isNotEqualTo(plainToken);
         }
 
         @Test
-        @DisplayName("should store Slack bot token")
-        void shouldStoreSlackBotToken() {
+        @DisplayName("should encrypt Slack bot token before storage")
+        void shouldEncryptSlackBotToken() {
             User user = TestDataFactory.createUser();
-            user.setSlackBotToken("xoxb-test-bot-token");
+            String plainToken = "xoxb-test-bot-token";
+            user.setSlackBotToken(plainToken);
             user = userRepository.save(user);
 
             User savedUser = userRepository.findById(user.getId()).orElseThrow();
 
-            assertThat(savedUser.getSlackBotToken()).isEqualTo("xoxb-test-bot-token");
+            assertThat(savedUser.getSlackBotToken()).isNotNull();
+            assertThat(savedUser.getSlackBotToken()).isNotEqualTo(plainToken);
         }
     }
 
@@ -316,7 +321,7 @@ class TokenStorageSecurityTest extends IntegrationTestBase {
             User savedUser = userRepository.findById(user.getId()).orElseThrow();
 
             assertThat(savedUser.getSpotifyTokenExpiresAt()).isNotNull();
-            assertThat(savedUser.getSpotifyTokenExpiresAt()).isAfter(java.time.LocalDateTime.now());
+            assertThat(savedUser.getSpotifyTokenExpiresAt()).isAfter(LocalDateTime.now());
         }
 
         @Test

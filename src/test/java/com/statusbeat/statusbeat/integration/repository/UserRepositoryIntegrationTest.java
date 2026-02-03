@@ -3,9 +3,11 @@ package com.statusbeat.statusbeat.integration.repository;
 import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.testutil.IntegrationTestBase;
 import com.statusbeat.statusbeat.testutil.TestDataFactory;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import java.util.List;
 import java.util.Optional;
@@ -87,16 +89,20 @@ class UserRepositoryIntegrationTest extends IntegrationTestBase {
     class FindBySlackTeamIdTests {
 
         @Test
-        @DisplayName("should find user by Slack team ID")
-        void shouldFindUserBySlackTeamId() {
-            User user = TestDataFactory.createUser();
-            user.setSlackTeamId("T12345");
-            userRepository.save(user);
+        @DisplayName("should throw exception when multiple users exist for a team ID")
+        void shouldThrowWhenMultipleUsersFoundForTeam() {
+            User user1 = TestDataFactory.createUser();
+            user1.setSlackTeamId("T12345");
+            userRepository.save(user1);
 
-            Optional<User> found = userRepository.findBySlackTeamId("T12345");
+            User user2 = TestDataFactory.createUser();
+            user2.setSlackTeamId("T12345");
+            userRepository.save(user2);
 
-            assertThat(found).isPresent();
-            assertThat(found.get().getSlackTeamId()).isEqualTo("T12345");
+            Assertions.assertThrows(
+                IncorrectResultSizeDataAccessException.class,
+                () -> userRepository.findBySlackTeamId("T12345")
+            );
         }
     }
 
@@ -232,7 +238,7 @@ class UserRepositoryIntegrationTest extends IntegrationTestBase {
             user2.setId(null);
 
             // MongoDB will throw a duplicate key exception
-            org.junit.jupiter.api.Assertions.assertThrows(Exception.class, () -> {
+            Assertions.assertThrows(Exception.class, () -> {
                 userRepository.save(user2);
             });
         }

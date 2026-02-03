@@ -4,6 +4,7 @@ import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.model.UserSettings;
 import com.statusbeat.statusbeat.testutil.IntegrationTestBase;
 import com.statusbeat.statusbeat.testutil.TestDataFactory;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -153,7 +154,7 @@ class UserSettingsRepositoryIntegrationTest extends IntegrationTestBase {
         @Test
         @DisplayName("should not throw when deleting non-existent settings")
         void shouldNotThrowWhenDeletingNonExistent() {
-            org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> {
+            Assertions.assertDoesNotThrow(() -> {
                 userSettingsRepository.deleteByUserId("NONEXISTENT");
             });
         }

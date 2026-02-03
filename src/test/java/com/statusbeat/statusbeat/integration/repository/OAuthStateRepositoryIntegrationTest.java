@@ -3,6 +3,7 @@ package com.statusbeat.statusbeat.integration.repository;
 import com.statusbeat.statusbeat.model.OAuthState;
 import com.statusbeat.statusbeat.testutil.IntegrationTestBase;
 import com.statusbeat.statusbeat.testutil.TestDataFactory;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -94,7 +95,7 @@ class OAuthStateRepositoryIntegrationTest extends IntegrationTestBase {
         @Test
         @DisplayName("should not throw when deleting non-existent state")
         void shouldNotThrowWhenDeletingNonExistent() {
-            org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> {
+            Assertions.assertDoesNotThrow(() -> {
                 oauthStateRepository.deleteByState("NONEXISTENT");
             });
         }
@@ -237,7 +238,7 @@ class OAuthStateRepositoryIntegrationTest extends IntegrationTestBase {
             state2.setId(null);
 
             // MongoDB will throw a duplicate key exception
-            org.junit.jupiter.api.Assertions.assertThrows(Exception.class, () -> {
+            Assertions.assertThrows(Exception.class, () -> {
                 oauthStateRepository.save(state2);
             });
         }
