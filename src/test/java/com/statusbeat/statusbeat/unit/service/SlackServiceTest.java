@@ -205,14 +205,27 @@ class SlackServiceTest extends TestBase {
         @Test
         @DisplayName("should handle HTML entities in status comparison")
         void shouldHandleHtmlEntities() {
-            // This is tested indirectly through hasManualStatusChange
+            // TODO: This test requires mocking the Slack API client to return a controlled value.
+            // Currently, the API call fails and the method returns false before normalization
+            // logic is ever executed. The test passes for the wrong reason.
+            //
+            // To properly test HTML entity normalization:
+            // 1. Mock the Slack client to return "Rock &amp; Roll" as current status
+            // 2. Set lastSetStatusText to "Rock & Roll"
+            // 3. Verify hasManualStatusChange returns false (entities normalized, strings match)
+            //
+            // Example (requires SlackService refactoring to inject mockable client):
+            // when(slackClient.getCurrentStatus(user)).thenReturn("Rock &amp; Roll");
+            // user.setLastSetStatusText("Rock & Roll");
+            // assertThat(slackService.hasManualStatusChange(user)).isFalse();
+
             User user = TestDataFactory.createUserWithSpotify();
             user.setLastSetStatusText("Rock & Roll");
 
-            // The normalization handles &amp; -> &
             boolean result = slackService.hasManualStatusChange(user);
 
-            assertThat(result).isFalse(); // Returns false because we can't fetch status
+            // This assertion passes because the API call fails, NOT because normalization works
+            assertThat(result).isFalse();
         }
     }
 
