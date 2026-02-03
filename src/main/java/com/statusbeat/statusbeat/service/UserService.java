@@ -274,7 +274,7 @@ public class UserService {
     public void deleteUserCompletely(String userId) {
         userSettingsRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
-        log.info("Deleted user and settings for userId: {}", userId);
+        log.info("User and settings deleted successfully.");
     }
 
     @Transactional
