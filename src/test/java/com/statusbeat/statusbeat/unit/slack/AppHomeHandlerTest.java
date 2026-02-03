@@ -1,24 +1,37 @@
 package com.statusbeat.statusbeat.unit.slack;
 
+import com.slack.api.bolt.App;
+import com.slack.api.bolt.context.builtin.ActionContext;
+import com.slack.api.bolt.handler.builtin.BlockActionHandler;
+import com.slack.api.bolt.request.builtin.BlockActionRequest;
+import com.slack.api.bolt.response.Response;
 import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.model.UserSettings;
 import com.statusbeat.statusbeat.service.*;
+import com.statusbeat.statusbeat.slack.AppHomeHandler;
+import com.statusbeat.statusbeat.testutil.TestBase;
 import com.statusbeat.statusbeat.testutil.TestDataFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @DisplayName("AppHomeHandler")
-@ExtendWith(MockitoExtension.class)
-class AppHomeHandlerTest {
+class AppHomeHandlerTest extends TestBase {
+
+    @Mock
+    private App slackApp;
 
     @Mock
     private AppHomeService appHomeService;
@@ -38,225 +51,323 @@ class AppHomeHandlerTest {
     @Mock
     private TimezoneService timezoneService;
 
+    @Mock
+    private BlockActionRequest blockActionRequest;
+
+    @Mock
+    private ActionContext actionContext;
+
+    @Mock
+    private com.slack.api.app_backend.interactive_components.payload.BlockActionPayload payload;
+
+    @Mock
+    private com.slack.api.app_backend.interactive_components.payload.BlockActionPayload.User payloadUser;
+
+    @Captor
+    private ArgumentCaptor<BlockActionHandler> blockActionHandlerCaptor;
+
+    private AppHomeHandler appHomeHandler;
+
+    @BeforeEach
+    void setUp() {
+        // Use lenient stubbing for infrastructure setup - these are needed for handler registration
+        // but not all tests will trigger all registered handlers
+        lenient().when(slackApp.event(any(Class.class), any())).thenReturn(slackApp);
+        lenient().when(slackApp.blockAction(anyString(), any())).thenReturn(slackApp);
+        lenient().when(slackApp.viewSubmission(anyString(), any())).thenReturn(slackApp);
+
+        appHomeHandler = new AppHomeHandler(
+                slackApp,
+                appHomeService,
+                userService,
+                musicSyncService,
+                spotifyService,
+                workingHoursValidator,
+                timezoneService
+        );
+    }
+
+    private BlockActionHandler captureHandler(String actionId) {
+        appHomeHandler.registerHandlers();
+        verify(slackApp).blockAction(eq(actionId), blockActionHandlerCaptor.capture());
+        return blockActionHandlerCaptor.getValue();
+    }
+
+    private void setupPayloadUser(String userId) {
+        when(blockActionRequest.getPayload()).thenReturn(payload);
+        when(payload.getUser()).thenReturn(payloadUser);
+        when(payloadUser.getId()).thenReturn(userId);
+        when(actionContext.ack()).thenReturn(Response.ok());
+        // Use lenient for getBotToken since not all handlers use it (e.g., when user not found)
+        lenient().when(actionContext.getBotToken()).thenReturn("xoxb-test-token");
+    }
+
     @Nested
-    @DisplayName("startSync action")
+    @DisplayName("start_sync action")
     class StartSyncActionTests {
 
         @Test
-        @DisplayName("should start sync for user")
-        void shouldStartSyncForUser() {
+        @DisplayName("should start sync for existing user")
+        void shouldStartSyncForExistingUser() throws Exception {
             User user = TestDataFactory.createUserWithSpotify();
+            String slackUserId = user.getSlackUserId();
 
-            userService.startSync(user.getId());
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.of(user));
+            setupPayloadUser(slackUserId);
+
+            BlockActionHandler handler = captureHandler("start_sync");
+            handler.apply(blockActionRequest, actionContext);
 
             verify(userService).startSync(user.getId());
+            verify(appHomeService).publishHomeView(slackUserId, "xoxb-test-token");
         }
 
         @Test
         @DisplayName("should not start sync when user not found")
-        void shouldNotStartSyncWhenUserNotFound() {
-            when(userService.findBySlackUserId("U12345")).thenReturn(Optional.empty());
+        void shouldNotStartSyncWhenUserNotFound() throws Exception {
+            String slackUserId = "U_NONEXISTENT";
 
-            Optional<User> result = userService.findBySlackUserId("U12345");
-            assertThat(result).isEmpty();
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.empty());
+            setupPayloadUser(slackUserId);
+
+            BlockActionHandler handler = captureHandler("start_sync");
+            handler.apply(blockActionRequest, actionContext);
+
+            verify(userService, never()).startSync(any());
+            verify(appHomeService, never()).publishHomeView(anyString(), anyString());
         }
     }
 
     @Nested
-    @DisplayName("stopSync action")
+    @DisplayName("stop_sync action")
     class StopSyncActionTests {
 
         @Test
-        @DisplayName("should stop sync for user")
-        void shouldStopSyncForUser() {
+        @DisplayName("should stop sync for existing user")
+        void shouldStopSyncForExistingUser() throws Exception {
             User user = TestDataFactory.createUserWithSpotify();
+            String slackUserId = user.getSlackUserId();
 
-            userService.stopSync(user.getId());
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.of(user));
+            setupPayloadUser(slackUserId);
+
+            BlockActionHandler handler = captureHandler("stop_sync");
+            handler.apply(blockActionRequest, actionContext);
 
             verify(userService).stopSync(user.getId());
+            verify(appHomeService).publishHomeView(slackUserId, "xoxb-test-token");
+        }
+
+        @Test
+        @DisplayName("should not stop sync when user not found")
+        void shouldNotStopSyncWhenUserNotFound() throws Exception {
+            String slackUserId = "U_NONEXISTENT";
+
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.empty());
+            setupPayloadUser(slackUserId);
+
+            BlockActionHandler handler = captureHandler("stop_sync");
+            handler.apply(blockActionRequest, actionContext);
+
+            verify(userService, never()).stopSync(any());
         }
     }
 
     @Nested
-    @DisplayName("enableSync action")
+    @DisplayName("enable_sync action")
     class EnableSyncActionTests {
 
         @Test
-        @DisplayName("should enable sync in settings")
-        void shouldEnableSyncInSettings() {
+        @DisplayName("should enable sync in user settings")
+        void shouldEnableSyncInSettings() throws Exception {
             User user = TestDataFactory.createUserWithSpotify();
             UserSettings settings = TestDataFactory.createUserSettings(user.getId());
             settings.setSyncEnabled(false);
+            String slackUserId = user.getSlackUserId();
 
-            settings.setSyncEnabled(true);
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.of(user));
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
+            setupPayloadUser(slackUserId);
+
+            BlockActionHandler handler = captureHandler("enable_sync");
+            handler.apply(blockActionRequest, actionContext);
 
             assertThat(settings.isSyncEnabled()).isTrue();
+            verify(userService).updateUserSettings(settings);
+            verify(appHomeService).publishHomeView(slackUserId, "xoxb-test-token");
+        }
+
+        @Test
+        @DisplayName("should not enable sync when settings not found")
+        void shouldNotEnableSyncWhenSettingsNotFound() throws Exception {
+            User user = TestDataFactory.createUserWithSpotify();
+            String slackUserId = user.getSlackUserId();
+
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.of(user));
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.empty());
+            setupPayloadUser(slackUserId);
+
+            BlockActionHandler handler = captureHandler("enable_sync");
+            handler.apply(blockActionRequest, actionContext);
+
+            verify(userService, never()).updateUserSettings(any());
         }
     }
 
     @Nested
-    @DisplayName("disableSync action")
+    @DisplayName("disable_sync action")
     class DisableSyncActionTests {
 
         @Test
-        @DisplayName("should disable sync in settings")
-        void shouldDisableSyncInSettings() {
-            UserSettings settings = TestDataFactory.createUserSettingsWithSyncActive("user-123");
+        @DisplayName("should disable sync in user settings")
+        void shouldDisableSyncInSettings() throws Exception {
+            User user = TestDataFactory.createUserWithSpotify();
+            UserSettings settings = TestDataFactory.createUserSettings(user.getId());
+            settings.setSyncEnabled(true);
+            String slackUserId = user.getSlackUserId();
 
-            settings.setSyncEnabled(false);
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.of(user));
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
+            setupPayloadUser(slackUserId);
+
+            BlockActionHandler handler = captureHandler("disable_sync");
+            handler.apply(blockActionRequest, actionContext);
 
             assertThat(settings.isSyncEnabled()).isFalse();
+            verify(userService).updateUserSettings(settings);
+            verify(appHomeService).publishHomeView(slackUserId, "xoxb-test-token");
         }
     }
 
     @Nested
-    @DisplayName("manualSync action")
+    @DisplayName("manual_sync action")
     class ManualSyncActionTests {
 
         @Test
-        @DisplayName("should trigger manual sync")
-        void shouldTriggerManualSync() {
-            musicSyncService.manualSync("U12345");
+        @DisplayName("should trigger manual sync for user")
+        void shouldTriggerManualSync() throws Exception {
+            String slackUserId = "U12345";
+            setupPayloadUser(slackUserId);
 
-            verify(musicSyncService).manualSync("U12345");
+            BlockActionHandler handler = captureHandler("manual_sync");
+            handler.apply(blockActionRequest, actionContext);
+
+            verify(musicSyncService).manualSync(slackUserId);
+            verify(appHomeService).publishHomeView(slackUserId, "xoxb-test-token");
         }
     }
 
     @Nested
-    @DisplayName("working hours modal")
-    class WorkingHoursModalTests {
+    @DisplayName("configure_working_hours action")
+    class ConfigureWorkingHoursActionTests {
 
         @Test
-        @DisplayName("should validate and convert working hours")
-        void shouldValidateAndConvertWorkingHours() {
-            when(workingHoursValidator.validateAndConvert("09:00", "17:00", -18000))
-                    .thenReturn(new Integer[]{1400, 2200});
+        @DisplayName("should not open modal when user not found")
+        void shouldNotOpenModalWhenUserNotFound() throws Exception {
+            String slackUserId = "U_NONEXISTENT";
 
-            Integer[] result = workingHoursValidator.validateAndConvert("09:00", "17:00", -18000);
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.empty());
+            setupPayloadUser(slackUserId);
 
-            assertThat(result).isNotNull();
-            assertThat(result).hasSize(2);
+            BlockActionHandler handler = captureHandler("configure_working_hours");
+            handler.apply(blockActionRequest, actionContext);
+
+            verify(actionContext).ack();
+            verify(userService, never()).getUserSettings(any());
         }
 
         @Test
-        @DisplayName("should return null for invalid working hours")
-        void shouldReturnNullForInvalidHours() {
-            when(workingHoursValidator.validateAndConvert("09:00", "09:00", 0))
-                    .thenReturn(null);
-
-            Integer[] result = workingHoursValidator.validateAndConvert("09:00", "09:00", 0);
-
-            assertThat(result).isNull();
-        }
-
-        @Test
-        @DisplayName("should convert UTC to local for display")
-        void shouldConvertUtcToLocalForDisplay() {
-            when(timezoneService.convertUtcToLocal(1400, -18000)).thenReturn("09:00");
-            when(timezoneService.convertUtcToLocal(2200, -18000)).thenReturn("17:00");
-
-            String startLocal = timezoneService.convertUtcToLocal(1400, -18000);
-            String endLocal = timezoneService.convertUtcToLocal(2200, -18000);
-
-            assertThat(startLocal).isEqualTo("09:00");
-            assertThat(endLocal).isEqualTo("17:00");
-        }
-    }
-
-    @Nested
-    @DisplayName("emoji modal")
-    class EmojiModalTests {
-
-        @Test
-        @DisplayName("should update emoji for user")
-        void shouldUpdateEmojiForUser() {
+        @DisplayName("should not open modal when settings not found")
+        void shouldNotOpenModalWhenSettingsNotFound() throws Exception {
             User user = TestDataFactory.createUserWithSpotify();
+            String slackUserId = user.getSlackUserId();
 
-            userService.updateDefaultEmoji(user.getId(), ":headphones:");
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.of(user));
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.empty());
+            setupPayloadUser(slackUserId);
 
-            verify(userService).updateDefaultEmoji(user.getId(), ":headphones:");
-        }
+            BlockActionHandler handler = captureHandler("configure_working_hours");
+            handler.apply(blockActionRequest, actionContext);
 
-        @Test
-        @DisplayName("should use default emoji when empty")
-        void shouldUseDefaultEmojiWhenEmpty() {
-            String emoji = "";
-            if (emoji == null || emoji.trim().isEmpty()) {
-                emoji = ":musical_note:";
-            }
-
-            assertThat(emoji).isEqualTo(":musical_note:");
+            verify(actionContext).ack();
         }
     }
 
     @Nested
-    @DisplayName("devices modal")
-    class DevicesModalTests {
+    @DisplayName("configure_devices action")
+    class ConfigureDevicesActionTests {
 
         @Test
-        @DisplayName("should fetch available devices from Spotify")
-        void shouldFetchAvailableDevices() {
+        @DisplayName("should fetch devices from Spotify when user exists")
+        void shouldFetchDevicesFromSpotify() throws Exception {
             User user = TestDataFactory.createUserWithSpotify();
+            UserSettings settings = TestDataFactory.createUserSettings(user.getId());
+            String slackUserId = user.getSlackUserId();
 
-            spotifyService.getAvailableDevices(user);
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.of(user));
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
+            when(spotifyService.getAvailableDevices(user)).thenReturn(java.util.List.of());
+            setupPayloadUser(slackUserId);
+            // These are needed for the modal opening but may not be called depending on devices list
+            lenient().when(payload.getTriggerId()).thenReturn("trigger-123");
+            lenient().when(actionContext.client()).thenReturn(mock(com.slack.api.methods.MethodsClient.class));
+
+            BlockActionHandler handler = captureHandler("configure_devices");
+            handler.apply(blockActionRequest, actionContext);
 
             verify(spotifyService).getAvailableDevices(user);
         }
 
         @Test
-        @DisplayName("should update allowed devices")
-        void shouldUpdateAllowedDevices() {
-            User user = TestDataFactory.createUserWithSpotify();
+        @DisplayName("should not fetch devices when user not found")
+        void shouldNotFetchDevicesWhenUserNotFound() throws Exception {
+            String slackUserId = "U_NONEXISTENT";
 
-            userService.updateAllowedDevices(user.getId(), java.util.List.of("device-1"));
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.empty());
+            setupPayloadUser(slackUserId);
 
-            verify(userService).updateAllowedDevices(user.getId(), java.util.List.of("device-1"));
-        }
+            BlockActionHandler handler = captureHandler("configure_devices");
+            handler.apply(blockActionRequest, actionContext);
 
-        @Test
-        @DisplayName("should clear device filter when none selected")
-        void shouldClearDeviceFilterWhenNoneSelected() {
-            User user = TestDataFactory.createUserWithSpotify();
-
-            userService.updateAllowedDevices(user.getId(), null);
-
-            verify(userService).updateAllowedDevices(user.getId(), null);
+            verify(spotifyService, never()).getAvailableDevices(any());
         }
     }
 
     @Nested
-    @DisplayName("reconnect Spotify action")
+    @DisplayName("reconnect_spotify action")
     class ReconnectSpotifyActionTests {
 
         @Test
-        @DisplayName("should generate reconnect URL for invalidated user")
-        void shouldGenerateReconnectUrl() {
+        @DisplayName("should send reconnect message when user exists")
+        void shouldSendReconnectMessage() throws Exception {
             User user = TestDataFactory.createInvalidatedUser();
+            String slackUserId = user.getSlackUserId();
 
-            String reconnectUrl = "/oauth/spotify?userId=" + user.getId();
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.of(user));
+            setupPayloadUser(slackUserId);
+            var mockClient = mock(com.slack.api.methods.MethodsClient.class);
+            when(actionContext.client()).thenReturn(mockClient);
+            when(mockClient.chatPostMessage(any(com.slack.api.methods.request.chat.ChatPostMessageRequest.class)))
+                    .thenReturn(mock(com.slack.api.methods.response.chat.ChatPostMessageResponse.class));
 
-            assertThat(reconnectUrl).contains(user.getId());
-        }
-    }
+            BlockActionHandler handler = captureHandler("reconnect_spotify");
+            handler.apply(blockActionRequest, actionContext);
 
-    @Nested
-    @DisplayName("app home view")
-    class AppHomeViewTests {
-
-        @Test
-        @DisplayName("should publish home view")
-        void shouldPublishHomeView() throws Exception {
-            appHomeService.publishHomeView("U12345", "xoxb-bot-token");
-
-            verify(appHomeService).publishHomeView("U12345", "xoxb-bot-token");
+            verify(actionContext).client();
         }
 
         @Test
-        @DisplayName("should refresh home view after action")
-        void shouldRefreshHomeViewAfterAction() throws Exception {
-            appHomeService.publishHomeView("U12345", "xoxb-bot-token");
+        @DisplayName("should not send message when user not found")
+        void shouldNotSendMessageWhenUserNotFound() throws Exception {
+            String slackUserId = "U_NONEXISTENT";
 
-            verify(appHomeService).publishHomeView("U12345", "xoxb-bot-token");
+            when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.empty());
+            setupPayloadUser(slackUserId);
+
+            BlockActionHandler handler = captureHandler("reconnect_spotify");
+            handler.apply(blockActionRequest, actionContext);
+
+            verify(actionContext, never()).client();
         }
     }
 }
