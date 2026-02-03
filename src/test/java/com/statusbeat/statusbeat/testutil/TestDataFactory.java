@@ -168,10 +168,10 @@ public final class TestDataFactory {
     }
 
     public static String createSlackAccessToken() {
-        return "xoxp-" + UUID.randomUUID().toString().replace("-", "").substring(0, 40);
+        return "xoxp-" + UUID.randomUUID().toString().replace("-", "");
     }
 
     public static String createSlackBotToken() {
-        return "xoxb-" + UUID.randomUUID().toString().replace("-", "").substring(0, 40);
+        return "xoxb-" + UUID.randomUUID().toString().replace("-", "");
     }
 }
