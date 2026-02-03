@@ -19,6 +19,8 @@ class EncryptionSecurityTest {
 
     private EncryptionUtil encryptionUtil;
     private static final String SECRET_KEY = "production-grade-secret-key-32chars";
+    private static final int GCM_IV_LENGTH = 12;
+    private static final int GCM_TAG_LENGTH_BYTES = 16;
 
     @BeforeEach
     void setUp() {
@@ -27,12 +29,12 @@ class EncryptionSecurityTest {
     }
 
     @Nested
-    @DisplayName("AES-256 Algorithm Verification")
-    class Aes256VerificationTests {
+    @DisplayName("AES-256-GCM Algorithm Verification")
+    class Aes256GcmVerificationTests {
 
         @Test
-        @DisplayName("should use AES-256 with proper key length")
-        void shouldUseAes256WithProperKeyLength() {
+        @DisplayName("should use AES-256-GCM with proper key length")
+        void shouldUseAes256GcmWithProperKeyLength() {
             String testData = "test-token";
             String encrypted = encryptionUtil.encrypt(testData);
 
@@ -42,18 +44,20 @@ class EncryptionSecurityTest {
         }
 
         @Test
-        @DisplayName("should produce encrypted output with IV prefix")
-        void shouldProduceEncryptedOutputWithIvPrefix() {
+        @DisplayName("should produce encrypted output with IV prefix and auth tag")
+        void shouldProduceEncryptedOutputWithIvPrefixAndAuthTag() {
             String testData = "test-token";
             String encrypted = encryptionUtil.encrypt(testData);
 
             byte[] decoded = Base64.getDecoder().decode(encrypted);
-            assertThat(decoded.length).isGreaterThanOrEqualTo(32);
+            // GCM output: 12-byte IV + ciphertext + 16-byte auth tag
+            int expectedMinLength = GCM_IV_LENGTH + testData.length() + GCM_TAG_LENGTH_BYTES;
+            assertThat(decoded.length).isGreaterThanOrEqualTo(expectedMinLength);
         }
 
         @Test
-        @DisplayName("should use PKCS5 padding")
-        void shouldUsePkcs5Padding() {
+        @DisplayName("should handle variable length inputs without padding")
+        void shouldHandleVariableLengthInputsWithoutPadding() {
             for (int len = 1; len <= 32; len++) {
                 String testData = "x".repeat(len);
                 String encrypted = encryptionUtil.encrypt(testData);
@@ -80,35 +84,31 @@ class EncryptionSecurityTest {
         }
 
         @Test
-        @DisplayName("should use cryptographically secure random IV")
-        void shouldUseCryptographicallySecureRandomIv() {
+        @DisplayName("should use cryptographically secure random 12-byte IV")
+        void shouldUseCryptographicallySecureRandom12ByteIv() {
             String testData = "test-data";
             Set<String> ivSet = new HashSet<>();
             for (int i = 0; i < 100; i++) {
                 String encrypted = encryptionUtil.encrypt(testData);
                 byte[] decoded = Base64.getDecoder().decode(encrypted);
-                byte[] iv = new byte[16];
-                System.arraycopy(decoded, 0, iv, 0, 16);
+                byte[] iv = new byte[GCM_IV_LENGTH];
+                System.arraycopy(decoded, 0, iv, 0, GCM_IV_LENGTH);
                 ivSet.add(Base64.getEncoder().encodeToString(iv));
             }
             assertThat(ivSet).hasSize(100);
         }
 
         @Test
-        @DisplayName("should fail decryption with wrong IV")
-        void shouldFailDecryptionWithWrongIv() {
+        @DisplayName("should fail decryption with corrupted IV")
+        void shouldFailDecryptionWithCorruptedIv() {
             String testData = "test-data";
             String encrypted = encryptionUtil.encrypt(testData);
             byte[] decoded = Base64.getDecoder().decode(encrypted);
             decoded[0] ^= 0xFF;
             String corrupted = Base64.getEncoder().encodeToString(decoded);
 
-            try {
-                String decrypted = encryptionUtil.decrypt(corrupted);
-                assertThat(decrypted).isNotEqualTo(testData);
-            } catch (RuntimeException e) {
-                assertThat(e).isNotNull();
-            }
+            assertThatThrownBy(() -> encryptionUtil.decrypt(corrupted))
+                    .isInstanceOf(RuntimeException.class);
         }
     }
 
@@ -117,7 +117,7 @@ class EncryptionSecurityTest {
     class KeyDerivationTests {
 
         @Test
-        @DisplayName("should encrypt and decrypt successfully (NOTE: does not verify PBKDF2 or iteration count)")
+        @DisplayName("should encrypt and decrypt successfully with PBKDF2 derived key")
         void shouldEncryptAndDecryptSuccessfully() {
             String testData = "test-token";
             String encrypted = encryptionUtil.encrypt(testData);
@@ -132,7 +132,6 @@ class EncryptionSecurityTest {
             String testData = "test-token";
             String encrypted1 = encryptionUtil.encrypt(testData);
 
-            // Create new instance with different key
             EncryptionUtil otherUtil = new EncryptionUtil();
             ReflectionTestUtils.setField(otherUtil, "secretKeyString", "different-secret-key");
 
@@ -156,16 +155,32 @@ class EncryptionSecurityTest {
     }
 
     @Nested
-    @DisplayName("Tamper Detection")
-    class TamperDetectionTests {
+    @DisplayName("Authenticated Encryption (GCM Tag)")
+    class AuthenticatedEncryptionTests {
 
         @Test
-        @DisplayName("should detect bit flip in ciphertext")
-        void shouldDetectBitFlipInCiphertext() {
+        @DisplayName("should detect bit flip in ciphertext via auth tag")
+        void shouldDetectBitFlipInCiphertextViaAuthTag() {
             String testData = "test-token";
             String encrypted = encryptionUtil.encrypt(testData);
             byte[] decoded = Base64.getDecoder().decode(encrypted);
-            decoded[20] ^= 0x01;
+            // Flip a bit in the ciphertext portion (after IV)
+            decoded[GCM_IV_LENGTH + 2] ^= 0x01;
+
+            String tampered = Base64.getEncoder().encodeToString(decoded);
+
+            assertThatThrownBy(() -> encryptionUtil.decrypt(tampered))
+                    .isInstanceOf(RuntimeException.class);
+        }
+
+        @Test
+        @DisplayName("should detect auth tag tampering")
+        void shouldDetectAuthTagTampering() {
+            String testData = "test-token";
+            String encrypted = encryptionUtil.encrypt(testData);
+            byte[] decoded = Base64.getDecoder().decode(encrypted);
+            // Flip a bit in the auth tag (last 16 bytes)
+            decoded[decoded.length - 1] ^= 0x01;
 
             String tampered = Base64.getEncoder().encodeToString(decoded);
 

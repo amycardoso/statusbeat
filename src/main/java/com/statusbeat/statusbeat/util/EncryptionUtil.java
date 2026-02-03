@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
@@ -19,10 +19,12 @@ import java.util.Base64;
 @Component
 public class EncryptionUtil {
 
-    private static final String ALGORITHM = "AES/CBC/PKCS5Padding";
+    private static final String ALGORITHM = "AES/GCM/NoPadding";
     private static final String SECRET_KEY_ALGORITHM = "AES";
     private static final int KEY_LENGTH = 256;
-    private static final int ITERATION_COUNT = 65536;
+    private static final int ITERATION_COUNT = 600000;
+    private static final int GCM_IV_LENGTH = 12;
+    private static final int GCM_TAG_LENGTH = 128;
 
     @Value("${statusbeat.encryption.secret-key}")
     private String secretKeyString;
@@ -31,17 +33,16 @@ public class EncryptionUtil {
 
     public String encrypt(String data) {
         try {
-            byte[] iv = new byte[16];
+            byte[] iv = new byte[GCM_IV_LENGTH];
             secureRandom.nextBytes(iv);
-            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+            GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
 
             SecretKey secretKey = getSecretKey();
             Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmParameterSpec);
 
             byte[] encrypted = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
 
-            // Combine IV and encrypted data
             byte[] combined = new byte[iv.length + encrypted.length];
             System.arraycopy(iv, 0, combined, 0, iv.length);
             System.arraycopy(encrypted, 0, combined, iv.length, encrypted.length);
@@ -57,17 +58,16 @@ public class EncryptionUtil {
         try {
             byte[] combined = Base64.getDecoder().decode(encryptedData);
 
-            // Extract IV and encrypted data
-            byte[] iv = new byte[16];
-            byte[] encrypted = new byte[combined.length - 16];
+            byte[] iv = new byte[GCM_IV_LENGTH];
+            byte[] encrypted = new byte[combined.length - GCM_IV_LENGTH];
             System.arraycopy(combined, 0, iv, 0, iv.length);
             System.arraycopy(combined, iv.length, encrypted, 0, encrypted.length);
 
-            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+            GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
             SecretKey secretKey = getSecretKey();
 
             Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
 
             byte[] decrypted = cipher.doFinal(encrypted);
             return new String(decrypted, StandardCharsets.UTF_8);
