@@ -1,10 +1,14 @@
 package com.statusbeat.statusbeat.unit.slack;
 
+import com.slack.api.app_backend.interactive_components.payload.BlockActionPayload;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.context.builtin.ActionContext;
 import com.slack.api.bolt.handler.builtin.BlockActionHandler;
 import com.slack.api.bolt.request.builtin.BlockActionRequest;
 import com.slack.api.bolt.response.Response;
+import com.slack.api.methods.MethodsClient;
+import com.slack.api.methods.request.chat.ChatPostMessageRequest;
+import com.slack.api.methods.response.chat.ChatPostMessageResponse;
 import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.model.UserSettings;
 import com.statusbeat.statusbeat.service.*;
@@ -19,6 +23,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -58,10 +63,10 @@ class AppHomeHandlerTest extends TestBase {
     private ActionContext actionContext;
 
     @Mock
-    private com.slack.api.app_backend.interactive_components.payload.BlockActionPayload payload;
+    private BlockActionPayload payload;
 
     @Mock
-    private com.slack.api.app_backend.interactive_components.payload.BlockActionPayload.User payloadUser;
+    private BlockActionPayload.User payloadUser;
 
     @Captor
     private ArgumentCaptor<BlockActionHandler> blockActionHandlerCaptor;
@@ -306,11 +311,11 @@ class AppHomeHandlerTest extends TestBase {
 
             when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.of(user));
             when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
-            when(spotifyService.getAvailableDevices(user)).thenReturn(java.util.List.of());
+            when(spotifyService.getAvailableDevices(user)).thenReturn(List.of());
             setupPayloadUser(slackUserId);
             // These are needed for the modal opening but may not be called depending on devices list
             lenient().when(payload.getTriggerId()).thenReturn("trigger-123");
-            lenient().when(actionContext.client()).thenReturn(mock(com.slack.api.methods.MethodsClient.class));
+            lenient().when(actionContext.client()).thenReturn(mock(MethodsClient.class));
 
             BlockActionHandler handler = captureHandler("configure_devices");
             handler.apply(blockActionRequest, actionContext);
@@ -345,10 +350,10 @@ class AppHomeHandlerTest extends TestBase {
 
             when(userService.findBySlackUserId(slackUserId)).thenReturn(Optional.of(user));
             setupPayloadUser(slackUserId);
-            var mockClient = mock(com.slack.api.methods.MethodsClient.class);
+            MethodsClient mockClient = mock(MethodsClient.class);
             when(actionContext.client()).thenReturn(mockClient);
-            when(mockClient.chatPostMessage(any(com.slack.api.methods.request.chat.ChatPostMessageRequest.class)))
-                    .thenReturn(mock(com.slack.api.methods.response.chat.ChatPostMessageResponse.class));
+            when(mockClient.chatPostMessage(any(ChatPostMessageRequest.class)))
+                    .thenReturn(mock(ChatPostMessageResponse.class));
 
             BlockActionHandler handler = captureHandler("reconnect_spotify");
             handler.apply(blockActionRequest, actionContext);
