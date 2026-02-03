@@ -18,11 +18,13 @@ Automatically sync your currently playing Spotify music with your Slack status.
 
 ## Features
 
-- **Auto-sync**: Updates your Slack status with currently playing Spotify tracks
+- **Auto-sync**: Updates your Slack status with currently playing Spotify tracks and podcasts
 - **Real-time**: Status updates every 10 seconds when music changes
 - **Playback Controls**: Control Spotify playback directly from Slack
 - **Secure**: OAuth tokens encrypted using AES-256
 - **Customizable**: Configure emoji, status format, and visibility preferences
+- **Content Filtering**: Sync music only, podcasts only, or both
+- **Rotating Emojis**: Set multiple emojis that rotate with each track change
 
 ## Tech Stack
 
@@ -98,6 +100,7 @@ The application starts on `http://localhost:8080`.
 | `/statusbeat enable` | Enable automatic sync |
 | `/statusbeat disable` | Disable automatic sync |
 | `/statusbeat reconnect` | Reconnect Spotify account |
+| `/statusbeat purge` | Delete your account and all data |
 | `/statusbeat help` | Show help message |
 
 ## Configuration
@@ -112,11 +115,18 @@ Available placeholders:
 
 ### Default Emoji
 
-The default status emoji is `:musical_note:`. Change in `application.properties`:
+The default status emoji is `:musical_note:`.
 
-```properties
-statusbeat.sync.default-emoji=:headphones:
-```
+### Rotating Emojis
+
+Configure multiple emojis that rotate randomly with each track change. When set, the system picks a random emoji from the list instead of using the default emoji.
+
+### Sync Content Type
+
+Choose what content to sync:
+- `MUSIC` - Only sync music tracks
+- `PODCASTS` - Only sync podcast episodes
+- `BOTH` - Sync both (default)
 
 ### Polling Interval
 
