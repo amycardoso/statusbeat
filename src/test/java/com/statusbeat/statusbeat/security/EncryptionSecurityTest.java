@@ -117,8 +117,8 @@ class EncryptionSecurityTest {
     class KeyDerivationTests {
 
         @Test
-        @DisplayName("should use PBKDF2 with 65536 iterations")
-        void shouldUsePbkdf2With65536Iterations() {
+        @DisplayName("should encrypt and decrypt successfully (NOTE: does not verify PBKDF2 or iteration count)")
+        void shouldEncryptAndDecryptSuccessfully() {
             String testData = "test-token";
             String encrypted = encryptionUtil.encrypt(testData);
             String decrypted = encryptionUtil.decrypt(encrypted);
