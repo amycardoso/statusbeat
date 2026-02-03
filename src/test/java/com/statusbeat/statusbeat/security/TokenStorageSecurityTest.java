@@ -209,29 +209,37 @@ class TokenStorageSecurityTest extends IntegrationTestBase {
         @Test
         @DisplayName("should encrypt Slack access token before storage")
         void shouldEncryptSlackAccessToken() {
-            User user = TestDataFactory.createUser();
             String plainToken = "xoxp-test-slack-token";
-            user.setSlackAccessToken(plainToken);
-            user = userRepository.save(user);
+
+            User user = userService.createOrUpdateUser("U_SLACK_TEST", "T_TEAM", plainToken);
 
             User savedUser = userRepository.findById(user.getId()).orElseThrow();
 
-            assertThat(savedUser.getSlackAccessToken()).isNotNull();
-            assertThat(savedUser.getSlackAccessToken()).isNotEqualTo(plainToken);
+            assertThat(savedUser.getEncryptedSlackAccessToken()).isNotNull();
+            assertThat(savedUser.getEncryptedSlackAccessToken()).isNotEqualTo(plainToken);
+
+            String decrypted = userService.getDecryptedSlackAccessToken(savedUser);
+            assertThat(decrypted).isEqualTo(plainToken);
         }
 
         @Test
         @DisplayName("should encrypt Slack bot token before storage")
         void shouldEncryptSlackBotToken() {
-            User user = TestDataFactory.createUser();
             String plainToken = "xoxb-test-bot-token";
-            user.setSlackBotToken(plainToken);
+
+            User user = TestDataFactory.createUser();
+            user = userRepository.save(user);
+
+            user.setEncryptedSlackBotToken(encryptionUtil.encrypt(plainToken));
             user = userRepository.save(user);
 
             User savedUser = userRepository.findById(user.getId()).orElseThrow();
 
-            assertThat(savedUser.getSlackBotToken()).isNotNull();
-            assertThat(savedUser.getSlackBotToken()).isNotEqualTo(plainToken);
+            assertThat(savedUser.getEncryptedSlackBotToken()).isNotNull();
+            assertThat(savedUser.getEncryptedSlackBotToken()).isNotEqualTo(plainToken);
+
+            String decrypted = userService.getDecryptedSlackBotToken(savedUser);
+            assertThat(decrypted).isEqualTo(plainToken);
         }
     }
 

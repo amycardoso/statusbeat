@@ -25,9 +25,9 @@ public class User {
 
     private String slackTeamId;
 
-    private String slackAccessToken;  // User token for profile updates
+    private String encryptedSlackAccessToken;
 
-    private String slackBotToken;  // Bot token for App Home and events
+    private String encryptedSlackBotToken;
 
     private String spotifyUserId;
 

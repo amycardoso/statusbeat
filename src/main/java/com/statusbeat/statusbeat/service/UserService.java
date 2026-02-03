@@ -41,7 +41,7 @@ public class UserService {
 
         if (existingUser.isPresent()) {
             User user = existingUser.get();
-            user.setSlackAccessToken(slackAccessToken);
+            user.setEncryptedSlackAccessToken(encryptionUtil.encrypt(slackAccessToken));
             user.setUpdatedAt(LocalDateTime.now());
             user.setActive(true);
             log.info("Updated existing user: {}", slackUserId);
@@ -50,7 +50,7 @@ public class UserService {
             User newUser = User.builder()
                     .slackUserId(slackUserId)
                     .slackTeamId(slackTeamId)
-                    .slackAccessToken(slackAccessToken)
+                    .encryptedSlackAccessToken(encryptionUtil.encrypt(slackAccessToken))
                     .active(true)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
@@ -93,6 +93,20 @@ public class UserService {
             return null;
         }
         return encryptionUtil.decrypt(user.getEncryptedSpotifyRefreshToken());
+    }
+
+    public String getDecryptedSlackAccessToken(User user) {
+        if (user.getEncryptedSlackAccessToken() == null) {
+            return null;
+        }
+        return encryptionUtil.decrypt(user.getEncryptedSlackAccessToken());
+    }
+
+    public String getDecryptedSlackBotToken(User user) {
+        if (user.getEncryptedSlackBotToken() == null) {
+            return null;
+        }
+        return encryptionUtil.decrypt(user.getEncryptedSlackBotToken());
     }
 
     public boolean isSpotifyTokenExpired(User user) {
