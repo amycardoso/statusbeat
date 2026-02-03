@@ -81,7 +81,7 @@ public class SlackService {
                     String notificationMessage = "⚠️ *Your Slack connection has been revoked*\n\n" +
                             "StatusBeat can no longer update your Slack status. " +
                             "To resume automatic status updates, please reinstall the app.";
-                    sendMessage(userService.getDecryptedSlackAccessToken(user), user.getSlackUserId(), notificationMessage);
+                    sendMessage(userService.getDecryptedSlackBotToken(user), user.getSlackUserId(), notificationMessage);
                     log.info("Sent invalidation notification to user {}", user.getSlackUserId());
                 } catch (Exception notifyError) {
                     log.warn("Could not send invalidation notification to user {}: {}",
