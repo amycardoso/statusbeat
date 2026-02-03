@@ -2,6 +2,7 @@ package com.statusbeat.statusbeat.service;
 
 import com.statusbeat.statusbeat.constants.AppConstants;
 import com.statusbeat.statusbeat.model.CurrentlyPlayingTrackInfo;
+import com.statusbeat.statusbeat.model.SyncContentType;
 import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.model.UserSettings;
 import lombok.RequiredArgsConstructor;
@@ -79,6 +80,13 @@ public class MusicSyncService {
         }
 
         CurrentlyPlayingTrackInfo currentTrack = spotifyService.getCurrentlyPlayingTrack(user);
+
+        // Filter by content type preference
+        if (currentTrack != null && !matchesContentTypePreference(currentTrack, settings)) {
+            log.debug("Skipping {} - user only wants {}",
+                    currentTrack.getContentType(), settings.getSyncContentType());
+            currentTrack = null; // Treat as not playing
+        }
 
         if (currentTrack == null || !currentTrack.isPlaying()) {
             handleNoTrackPlaying(user, settings);
@@ -225,6 +233,20 @@ public class MusicSyncService {
         }
 
         return isAllowed;
+    }
+
+    private boolean matchesContentTypePreference(CurrentlyPlayingTrackInfo track, UserSettings settings) {
+        SyncContentType preference = settings.getSyncContentType();
+        if (preference == null || preference == SyncContentType.BOTH) {
+            return true;
+        }
+        if (preference == SyncContentType.MUSIC) {
+            return "track".equals(track.getContentType());
+        }
+        if (preference == SyncContentType.PODCASTS) {
+            return "episode".equals(track.getContentType());
+        }
+        return true;
     }
 
     private boolean isWithinWorkingHours(User user, UserSettings settings) {

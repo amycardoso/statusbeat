@@ -107,10 +107,12 @@ public class AppHomeService {
                         ),
                         section(section -> section
                                 .text(markdownText(
-                                        String.format("*Status:* %s\n*Sync:* %s\n*Emoji:* %s\n*Show Artist:* %s\n*Show Title:* %s",
+                                        String.format("*Status:* %s\n*Sync:* %s\n*Content:* %s\n*Emoji:* %s\n*Rotating Emojis:* %s\n*Show Artist:* %s\n*Show Title:* %s",
                                                 settings.isSyncEnabled() ? ":white_check_mark: Enabled" : ":no_entry: Disabled",
                                                 getSyncStateDisplay(settings),
+                                                getContentTypeDisplay(settings),
                                                 settings.getDefaultEmoji(),
+                                                getRotatingEmojisDisplay(settings),
                                                 settings.isShowArtist() ? "Yes" : "No",
                                                 settings.isShowSongTitle() ? "Yes" : "No"
                                         )
@@ -279,5 +281,23 @@ public class AppHomeService {
         } else {
             return ":double_vertical_bar: Paused";
         }
+    }
+
+    private String getContentTypeDisplay(UserSettings settings) {
+        if (settings.getSyncContentType() == null) {
+            return "Music & Podcasts";
+        }
+        return switch (settings.getSyncContentType()) {
+            case MUSIC -> "Music only";
+            case PODCASTS -> "Podcasts only";
+            case BOTH -> "Music & Podcasts";
+        };
+    }
+
+    private String getRotatingEmojisDisplay(UserSettings settings) {
+        if (settings.getRotatingEmojis() == null || settings.getRotatingEmojis().isEmpty()) {
+            return "Not configured";
+        }
+        return String.join(" ", settings.getRotatingEmojis());
     }
 }

@@ -49,6 +49,7 @@ public class SlackCommandHandler {
                 case "enable" -> handleEnable(req, ctx);
                 case "disable" -> handleDisable(req, ctx);
                 case "reconnect" -> handleReconnect(req, ctx);
+                case "purge" -> handlePurge(req, ctx);
                 case "help" -> handleHelp(req, ctx);
                 default -> handleHelp(req, ctx);
             };
@@ -140,6 +141,27 @@ public class SlackCommandHandler {
         }
     }
 
+    private Response handlePurge(SlashCommandRequest req, SlashCommandContext ctx) {
+        try {
+            String slackUserId = req.getPayload().getUserId();
+            Optional<User> userOpt = userService.findBySlackUserId(slackUserId);
+
+            if (userOpt.isEmpty()) {
+                return ctx.ack(":x: No account found to delete.");
+            }
+
+            User user = userOpt.get();
+            userService.deleteUserCompletely(user.getId());
+
+            return ctx.ack(":wastebasket: Your StatusBeat account has been deleted. " +
+                    "All your data has been permanently removed.");
+
+        } catch (Exception e) {
+            log.error("Error handling purge command", e);
+            return ctx.ack(":x: Failed to delete account. Please try again.");
+        }
+    }
+
     private Response handleHelp(SlashCommandRequest req, SlashCommandContext ctx) {
         String helpMessage = """
                 :musical_note: *StatusBeat Commands*
@@ -151,6 +173,7 @@ public class SlackCommandHandler {
                 `/statusbeat enable` - Enable automatic music sync
                 `/statusbeat disable` - Disable automatic music sync
                 `/statusbeat reconnect` - Reconnect your Spotify account
+                `/statusbeat purge` - Delete your account and all data
                 `/statusbeat help` - Show this help message
 
                 :link: To get started, connect your accounts at: %s

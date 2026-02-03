@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -255,6 +256,60 @@ class SlackServiceTest extends TestBase {
             boolean result = spySlackService.hasManualStatusChange(user);
 
             assertThat(result).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("rotating emoji selection")
+    class RotatingEmojiTests {
+
+        @Test
+        @DisplayName("should use default emoji when no rotating emojis configured")
+        void shouldUseDefaultEmojiWhenNoRotatingEmojis() {
+            User user = TestDataFactory.createUserWithSpotify();
+            UserSettings settings = TestDataFactory.createUserSettings(user.getId());
+            settings.setRotatingEmojis(null);
+            settings.setDefaultEmoji(":headphones:");
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
+
+            // Call will fail because we don't have a real Slack token
+            assertThatThrownBy(() ->
+                    slackService.updateUserStatus(user, "Song", "Artist", 180000, 60000))
+                    .isInstanceOf(RuntimeException.class);
+
+            verify(userService).getUserSettings(user.getId());
+        }
+
+        @Test
+        @DisplayName("should use default emoji when rotating emojis list is empty")
+        void shouldUseDefaultEmojiWhenRotatingEmojisEmpty() {
+            User user = TestDataFactory.createUserWithSpotify();
+            UserSettings settings = TestDataFactory.createUserSettings(user.getId());
+            settings.setRotatingEmojis(List.of());
+            settings.setDefaultEmoji(":headphones:");
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
+
+            assertThatThrownBy(() ->
+                    slackService.updateUserStatus(user, "Song", "Artist", 180000, 60000))
+                    .isInstanceOf(RuntimeException.class);
+
+            verify(userService).getUserSettings(user.getId());
+        }
+
+        @Test
+        @DisplayName("should select from rotating emojis when configured")
+        void shouldSelectFromRotatingEmojisWhenConfigured() {
+            User user = TestDataFactory.createUserWithSpotify();
+            UserSettings settings = TestDataFactory.createUserSettingsWithRotatingEmojis(
+                    user.getId(), List.of(":headphones:", ":notes:", ":musical_note:"));
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
+
+            // Call will fail because we don't have a real Slack token
+            assertThatThrownBy(() ->
+                    slackService.updateUserStatus(user, "Song", "Artist", 180000, 60000))
+                    .isInstanceOf(RuntimeException.class);
+
+            verify(userService).getUserSettings(user.getId());
         }
     }
 

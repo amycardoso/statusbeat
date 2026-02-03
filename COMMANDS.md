@@ -78,6 +78,21 @@ Reconnect your Spotify account.
 
 Use when your Spotify connection has expired or needs to be refreshed.
 
+### `/statusbeat purge`
+
+Permanently delete your StatusBeat account and all associated data.
+
+```
+/statusbeat purge
+```
+
+This action:
+- Removes all your settings
+- Deletes your stored tokens
+- Cannot be undone
+
+Use this to completely remove your data from StatusBeat.
+
 ### `/statusbeat help`
 
 Display help with all available commands.
@@ -127,9 +142,11 @@ Display help with all available commands.
 
 Configurable options:
 - Status emoji (default: `:musical_note:`)
+- Rotating emojis (multiple emojis that cycle randomly)
 - Status template format (default: `{title} - {artist}`)
 - Show/hide artist name
 - Show/hide song title
+- Sync content type (music, podcasts, or both)
 
 ## Support
 

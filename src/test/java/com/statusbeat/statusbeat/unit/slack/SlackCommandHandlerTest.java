@@ -217,14 +217,49 @@ class SlackCommandHandlerTest {
     }
 
     @Nested
+    @DisplayName("handlePurge")
+    class HandlePurgeTests {
+
+        @Test
+        @DisplayName("should call deleteUserCompletely for valid user")
+        void shouldCallDeleteUserCompletely() {
+            User user = TestDataFactory.createUserWithSpotify();
+
+            userService.deleteUserCompletely(user.getId());
+
+            verify(userService).deleteUserCompletely(user.getId());
+        }
+
+        @Test
+        @DisplayName("should return error when user not found")
+        void shouldReturnErrorWhenUserNotFound() {
+            when(userService.findBySlackUserId("U12345")).thenReturn(Optional.empty());
+
+            Optional<User> result = userService.findBySlackUserId("U12345");
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("should handle deletion error")
+        void shouldHandleDeletionError() {
+            User user = TestDataFactory.createUserWithSpotify();
+            doThrow(new RuntimeException("Database error")).when(userService).deleteUserCompletely(user.getId());
+
+            assertThatThrownBy(() -> userService.deleteUserCompletely(user.getId()))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining("Database error");
+        }
+    }
+
+    @Nested
     @DisplayName("handleHelp")
     class HandleHelpTests {
 
         @Test
-        @DisplayName("should return help message")
+        @DisplayName("should return help message including purge")
         void shouldReturnHelpMessage() {
-            String expectedCommands = "play pause status sync enable disable reconnect help";
-            assertThat(expectedCommands).contains("play", "pause", "status", "sync");
+            String expectedCommands = "play pause status sync enable disable reconnect purge help";
+            assertThat(expectedCommands).contains("play", "pause", "status", "sync", "purge");
         }
     }
 

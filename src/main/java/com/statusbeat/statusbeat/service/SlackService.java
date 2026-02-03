@@ -16,6 +16,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Service
@@ -44,7 +46,7 @@ public class SlackService {
             }
 
             String statusText = buildStatusText(settings, songTitle, artist);
-            String statusEmoji = settings.getDefaultEmoji();
+            String statusEmoji = selectEmoji(settings);
 
             // Calculate status expiration based on remaining song time + overhead
             Long statusExpiration = null;
@@ -171,6 +173,15 @@ public class SlackService {
                    .trim();
 
         return text;
+    }
+
+    private String selectEmoji(UserSettings settings) {
+        List<String> emojis = settings.getRotatingEmojis();
+        if (emojis == null || emojis.isEmpty()) {
+            return settings.getDefaultEmoji();
+        }
+        int index = ThreadLocalRandom.current().nextInt(emojis.size());
+        return emojis.get(index);
     }
 
     /**
