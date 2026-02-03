@@ -103,9 +103,8 @@ class SlackServiceTest extends TestBase {
         @DisplayName("should return false when cannot fetch current status")
         void shouldReturnFalseWhenCannotFetchStatus() {
             User user = TestDataFactory.createUserWithSpotify();
-            user.setSlackAccessToken("invalid-token");
+            user.setEncryptedSlackAccessToken("invalid-encrypted-token");
 
-            // getCurrentStatusText will return null on error
             boolean result = slackService.hasManualStatusChange(user);
 
             assertThat(result).isFalse();

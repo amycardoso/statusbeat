@@ -10,6 +10,7 @@ import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.model.UserSettings;
 import com.statusbeat.statusbeat.repository.UserRepository;
 import com.statusbeat.statusbeat.repository.UserSettingsRepository;
+import com.statusbeat.statusbeat.util.EncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class MongoDBInstallationService implements InstallationService {
     private final UserRepository userRepository;
     private final UserSettingsRepository userSettingsRepository;
     private final SlackService slackService;
+    private final EncryptionUtil encryptionUtil;
     private boolean historicalDataEnabled = false;
 
     @Override
@@ -55,18 +57,16 @@ public class MongoDBInstallationService implements InstallationService {
 
         User user;
         if (existingUser.isPresent()) {
-            // Update existing user with new Slack token
             user = existingUser.get();
-            user.setSlackAccessToken(installer.getInstallerUserAccessToken());
+            user.setEncryptedSlackAccessToken(encryptionUtil.encrypt(installer.getInstallerUserAccessToken()));
             user.setSlackTeamId(installer.getTeamId());
             user.setUpdatedAt(java.time.LocalDateTime.now());
             log.info("Updating existing user: {}", user.getSlackUserId());
         } else {
-            // Create new user
             user = User.builder()
                     .slackUserId(installer.getInstallerUserId())
                     .slackTeamId(installer.getTeamId())
-                    .slackAccessToken(installer.getInstallerUserAccessToken())
+                    .encryptedSlackAccessToken(encryptionUtil.encrypt(installer.getInstallerUserAccessToken()))
                     .active(true)
                     .createdAt(java.time.LocalDateTime.now())
                     .updatedAt(java.time.LocalDateTime.now())
@@ -134,7 +134,7 @@ public class MongoDBInstallationService implements InstallationService {
         }
 
         User user = userOpt.get();
-        user.setSlackBotToken(bot.getBotAccessToken());
+        user.setEncryptedSlackBotToken(encryptionUtil.encrypt(bot.getBotAccessToken()));
         user.setUpdatedAt(java.time.LocalDateTime.now());
 
         userRepository.save(user);
@@ -171,18 +171,20 @@ public class MongoDBInstallationService implements InstallationService {
 
         User user = userOpt.get();
 
-        // Create Bot object with actual bot token
         DefaultBot bot = new DefaultBot();
         bot.setEnterpriseId(enterpriseId);
         bot.setTeamId(teamId);
         bot.setScope("commands,app_mentions:read,chat:write");
-        bot.setBotAccessToken(user.getSlackBotToken()); // Use actual bot token for App Home
+        String decryptedBotToken = user.getEncryptedSlackBotToken() != null
+                ? encryptionUtil.decrypt(user.getEncryptedSlackBotToken())
+                : null;
+        bot.setBotAccessToken(decryptedBotToken);
         bot.setBotUserId(user.getSlackUserId());
         bot.setInstalledAt(user.getCreatedAt() != null ?
             user.getCreatedAt().atZone(ZoneId.systemDefault()).toEpochSecond() : null);
 
         log.info("Found bot installation for teamId: {}, bot token present: {}",
-                teamId, user.getSlackBotToken() != null);
+                teamId, decryptedBotToken != null);
         return bot;
     }
 
@@ -202,13 +204,15 @@ public class MongoDBInstallationService implements InstallationService {
 
         User user = userOpt.get();
 
-        // Create Installer object
         DefaultInstaller installer = new DefaultInstaller();
         installer.setEnterpriseId(enterpriseId);
         installer.setTeamId(teamId);
         installer.setInstallerUserId(user.getSlackUserId());
         installer.setScope("users.profile:write,users.profile:read");
-        installer.setInstallerUserAccessToken(user.getSlackAccessToken());
+        String decryptedAccessToken = user.getEncryptedSlackAccessToken() != null
+                ? encryptionUtil.decrypt(user.getEncryptedSlackAccessToken())
+                : null;
+        installer.setInstallerUserAccessToken(decryptedAccessToken);
         installer.setInstalledAt(user.getCreatedAt() != null ?
             user.getCreatedAt().atZone(ZoneId.systemDefault()).toEpochSecond() : null);
 

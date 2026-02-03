@@ -62,7 +62,7 @@ public class SlackService {
                         remainingSeconds, durationMs / 1000, currentProgress / 1000, expirationOverheadMs / 1000);
             }
 
-            setSlackStatus(user.getSlackAccessToken(), statusText, statusEmoji, statusExpiration);
+            setSlackStatus(userService.getDecryptedSlackAccessToken(user), statusText, statusEmoji, statusExpiration);
 
             userService.updateLastSetStatus(user.getId(), statusText);
 
@@ -81,7 +81,7 @@ public class SlackService {
                     String notificationMessage = "⚠️ *Your Slack connection has been revoked*\n\n" +
                             "StatusBeat can no longer update your Slack status. " +
                             "To resume automatic status updates, please reinstall the app.";
-                    sendMessage(user.getSlackAccessToken(), user.getSlackUserId(), notificationMessage);
+                    sendMessage(userService.getDecryptedSlackAccessToken(user), user.getSlackUserId(), notificationMessage);
                     log.info("Sent invalidation notification to user {}", user.getSlackUserId());
                 } catch (Exception notifyError) {
                     log.warn("Could not send invalidation notification to user {}: {}",
@@ -115,7 +115,7 @@ public class SlackService {
         }
 
         try {
-            setSlackStatus(user.getSlackAccessToken(), "", "", null);
+            setSlackStatus(userService.getDecryptedSlackAccessToken(user), "", "", null);
             log.info("Cleared Slack status for user {}", user.getSlackUserId());
         } catch (Exception e) {
             log.error("Error clearing Slack status for user {}", user.getSlackUserId(), e);
@@ -202,7 +202,7 @@ public class SlackService {
      */
     public String getCurrentStatusText(User user) {
         try {
-            MethodsClient client = slack.methods(user.getSlackAccessToken());
+            MethodsClient client = slack.methods(userService.getDecryptedSlackAccessToken(user));
             var response = client.usersProfileGet(req -> req.user(user.getSlackUserId()));
 
             if (response.isOk() && response.getProfile() != null) {

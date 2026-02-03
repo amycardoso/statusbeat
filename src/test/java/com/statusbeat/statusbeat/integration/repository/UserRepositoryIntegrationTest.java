@@ -51,11 +51,11 @@ class UserRepositoryIntegrationTest extends IntegrationTestBase {
             User user = TestDataFactory.createUser();
             User saved = userRepository.save(user);
 
-            saved.setSlackAccessToken("new-token");
+            saved.setEncryptedSlackAccessToken("new-encrypted-token");
             User updated = userRepository.save(saved);
 
             assertThat(updated.getId()).isEqualTo(saved.getId());
-            assertThat(updated.getSlackAccessToken()).isEqualTo("new-token");
+            assertThat(updated.getEncryptedSlackAccessToken()).isEqualTo("new-encrypted-token");
         }
     }
 

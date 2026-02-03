@@ -122,15 +122,16 @@ class UserServiceTest extends TestBase {
         @DisplayName("should update existing user")
         void shouldUpdateExistingUser() {
             User existingUser = TestDataFactory.createUser("U12345");
-            existingUser.setSlackAccessToken("old-token");
+            existingUser.setEncryptedSlackAccessToken("old-encrypted-token");
             when(userRepository.findBySlackUserId("U12345")).thenReturn(Optional.of(existingUser));
             when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(encryptionUtil.encrypt("new-token")).thenReturn("new-encrypted-token");
 
             User result = userService.createOrUpdateUser("U12345", "T12345", "new-token");
 
-            assertThat(result.getSlackAccessToken()).isEqualTo("new-token");
+            assertThat(result.getEncryptedSlackAccessToken()).isEqualTo("new-encrypted-token");
             assertThat(result.isActive()).isTrue();
-
+            verify(encryptionUtil).encrypt("new-token");
             verify(userSettingsRepository, never()).save(any());
         }
     }
