@@ -19,6 +19,7 @@ import se.michaelthelin.spotify.exceptions.detailed.UnauthorizedException;
 import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import se.michaelthelin.spotify.model_objects.miscellaneous.CurrentlyPlaying;
 import se.michaelthelin.spotify.model_objects.miscellaneous.CurrentlyPlayingContext;
+import se.michaelthelin.spotify.model_objects.specification.Episode;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeRefreshRequest;
 import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeRequest;
@@ -137,12 +138,11 @@ public class SpotifyService {
                 return null;
             }
 
-            if (context.getItem() instanceof Track) {
-                Track track = (Track) context.getItem();
-                String artistName = track.getArtists().length > 0 ? track.getArtists()[0].getName() : AppConstants.UNKNOWN_ARTIST;
+            String deviceId = context.getDevice() != null ? context.getDevice().getId() : null;
+            String deviceName = context.getDevice() != null ? context.getDevice().getName() : null;
 
-                String deviceId = context.getDevice() != null ? context.getDevice().getId() : null;
-                String deviceName = context.getDevice() != null ? context.getDevice().getName() : null;
+            if (context.getItem() instanceof Track track) {
+                String artistName = track.getArtists().length > 0 ? track.getArtists()[0].getName() : AppConstants.UNKNOWN_ARTIST;
 
                 return CurrentlyPlayingTrackInfo.builder()
                         .trackId(track.getId())
@@ -153,6 +153,19 @@ public class SpotifyService {
                         .progressMs(context.getProgress_ms())
                         .deviceId(deviceId)
                         .deviceName(deviceName)
+                        .contentType("track")
+                        .build();
+            } else if (context.getItem() instanceof Episode episode) {
+                return CurrentlyPlayingTrackInfo.builder()
+                        .trackId(episode.getId())
+                        .trackName(episode.getName())
+                        .artistName(episode.getShow().getName())
+                        .isPlaying(context.getIs_playing())
+                        .durationMs(episode.getDurationMs())
+                        .progressMs(context.getProgress_ms())
+                        .deviceId(deviceId)
+                        .deviceName(deviceName)
+                        .contentType("episode")
                         .build();
             }
 

@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -33,6 +34,13 @@ public class UserSettings {
 
     @Builder.Default
     private String defaultEmoji = ":musical_note:";
+
+    // Multiple emojis to rotate (null = use defaultEmoji)
+    private List<String> rotatingEmojis;
+
+    // Sync content type: MUSIC, PODCASTS, BOTH (default)
+    @Builder.Default
+    private SyncContentType syncContentType = SyncContentType.BOTH;
 
     @Builder.Default
     private boolean notificationsEnabled = false;

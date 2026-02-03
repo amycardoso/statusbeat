@@ -271,6 +271,13 @@ public class UserService {
     }
 
     @Transactional
+    public void deleteUserCompletely(String userId) {
+        userSettingsRepository.deleteByUserId(userId);
+        userRepository.deleteById(userId);
+        log.info("Deleted user and settings for userId: {}", userId);
+    }
+
+    @Transactional
     public UserSettings updateUserSettings(UserSettings settings) {
         settings.setUpdatedAt(LocalDateTime.now());
         return userSettingsRepository.save(settings);

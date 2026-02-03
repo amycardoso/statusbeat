@@ -2,6 +2,7 @@ package com.statusbeat.statusbeat.testutil;
 
 import com.statusbeat.statusbeat.model.CurrentlyPlayingTrackInfo;
 import com.statusbeat.statusbeat.model.OAuthState;
+import com.statusbeat.statusbeat.model.SyncContentType;
 import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.model.UserSettings;
 
@@ -125,6 +126,7 @@ public final class TestDataFactory {
                 .progressMs(60000)  // 1 minute in
                 .deviceId("device-123")
                 .deviceName("Test Device")
+                .contentType("track")
                 .build();
     }
 
@@ -139,6 +141,37 @@ public final class TestDataFactory {
         track.setDeviceId(deviceId);
         track.setDeviceName("Device " + deviceId);
         return track;
+    }
+
+    public static CurrentlyPlayingTrackInfo createEpisodeInfo() {
+        return createEpisodeInfo("episode-123", "Test Episode", "Test Show");
+    }
+
+    public static CurrentlyPlayingTrackInfo createEpisodeInfo(String episodeId, String episodeName, String showName) {
+        return CurrentlyPlayingTrackInfo.builder()
+                .trackId(episodeId)
+                .trackName(episodeName)
+                .artistName(showName)
+                .isPlaying(true)
+                .durationMs(3600000) // 1 hour
+                .progressMs(600000)  // 10 minutes in
+                .deviceId("device-123")
+                .deviceName("Test Device")
+                .contentType("episode")
+                .build();
+    }
+
+    public static UserSettings createUserSettingsWithSyncContentType(String userId, SyncContentType contentType) {
+        UserSettings settings = createUserSettings(userId);
+        settings.setSyncContentType(contentType);
+        settings.setSyncActive(true);
+        return settings;
+    }
+
+    public static UserSettings createUserSettingsWithRotatingEmojis(String userId, List<String> emojis) {
+        UserSettings settings = createUserSettings(userId);
+        settings.setRotatingEmojis(emojis);
+        return settings;
     }
 
     public static OAuthState createOAuthState() {

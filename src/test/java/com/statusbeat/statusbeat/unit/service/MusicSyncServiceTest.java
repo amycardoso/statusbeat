@@ -1,6 +1,7 @@
 package com.statusbeat.statusbeat.unit.service;
 
 import com.statusbeat.statusbeat.model.CurrentlyPlayingTrackInfo;
+import com.statusbeat.statusbeat.model.SyncContentType;
 import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.model.UserSettings;
 import com.statusbeat.statusbeat.service.*;
@@ -434,6 +435,125 @@ class MusicSyncServiceTest extends TestBase {
             assertThatThrownBy(() -> musicSyncService.manualSync("unknown"))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessageContaining("User not found");
+        }
+    }
+
+    @Nested
+    @DisplayName("content type filtering")
+    class ContentTypeFilteringTests {
+
+        @Test
+        @DisplayName("should sync music when content type is BOTH")
+        void shouldSyncMusicWhenContentTypeBoth() {
+            User user = TestDataFactory.createUserWithSpotify();
+            user.setCurrentlyPlayingSongId(null);
+            UserSettings settings = TestDataFactory.createUserSettingsWithSyncContentType(
+                    user.getId(), SyncContentType.BOTH);
+            CurrentlyPlayingTrackInfo track = TestDataFactory.createTrackInfo();
+
+            when(userService.findAllActiveUsers()).thenReturn(List.of(user));
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
+            when(slackService.hasManualStatusChange(user)).thenReturn(false);
+            when(spotifyService.getCurrentlyPlayingTrack(user)).thenReturn(track);
+
+            musicSyncService.syncMusicStatus();
+
+            verify(slackService).updateUserStatus(eq(user), any(), any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("should sync podcast when content type is BOTH")
+        void shouldSyncPodcastWhenContentTypeBoth() {
+            User user = TestDataFactory.createUserWithSpotify();
+            user.setCurrentlyPlayingSongId(null);
+            UserSettings settings = TestDataFactory.createUserSettingsWithSyncContentType(
+                    user.getId(), SyncContentType.BOTH);
+            CurrentlyPlayingTrackInfo episode = TestDataFactory.createEpisodeInfo();
+
+            when(userService.findAllActiveUsers()).thenReturn(List.of(user));
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
+            when(slackService.hasManualStatusChange(user)).thenReturn(false);
+            when(spotifyService.getCurrentlyPlayingTrack(user)).thenReturn(episode);
+
+            musicSyncService.syncMusicStatus();
+
+            verify(slackService).updateUserStatus(eq(user), any(), any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("should skip podcast when content type is MUSIC only")
+        void shouldSkipPodcastWhenContentTypeMusicOnly() {
+            User user = TestDataFactory.createUserWithCurrentlyPlaying();
+            UserSettings settings = TestDataFactory.createUserSettingsWithSyncContentType(
+                    user.getId(), SyncContentType.MUSIC);
+            CurrentlyPlayingTrackInfo episode = TestDataFactory.createEpisodeInfo();
+
+            when(userService.findAllActiveUsers()).thenReturn(List.of(user));
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
+            when(slackService.hasManualStatusChange(user)).thenReturn(false);
+            when(spotifyService.getCurrentlyPlayingTrack(user)).thenReturn(episode);
+
+            musicSyncService.syncMusicStatus();
+
+            verify(slackService, never()).updateUserStatus(any(), any(), any(), any(), any());
+            verify(slackService).clearUserStatus(user);
+        }
+
+        @Test
+        @DisplayName("should sync music when content type is MUSIC only")
+        void shouldSyncMusicWhenContentTypeMusicOnly() {
+            User user = TestDataFactory.createUserWithSpotify();
+            user.setCurrentlyPlayingSongId(null);
+            UserSettings settings = TestDataFactory.createUserSettingsWithSyncContentType(
+                    user.getId(), SyncContentType.MUSIC);
+            CurrentlyPlayingTrackInfo track = TestDataFactory.createTrackInfo();
+
+            when(userService.findAllActiveUsers()).thenReturn(List.of(user));
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
+            when(slackService.hasManualStatusChange(user)).thenReturn(false);
+            when(spotifyService.getCurrentlyPlayingTrack(user)).thenReturn(track);
+
+            musicSyncService.syncMusicStatus();
+
+            verify(slackService).updateUserStatus(eq(user), any(), any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("should skip music when content type is PODCASTS only")
+        void shouldSkipMusicWhenContentTypePodcastsOnly() {
+            User user = TestDataFactory.createUserWithCurrentlyPlaying();
+            UserSettings settings = TestDataFactory.createUserSettingsWithSyncContentType(
+                    user.getId(), SyncContentType.PODCASTS);
+            CurrentlyPlayingTrackInfo track = TestDataFactory.createTrackInfo();
+
+            when(userService.findAllActiveUsers()).thenReturn(List.of(user));
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
+            when(slackService.hasManualStatusChange(user)).thenReturn(false);
+            when(spotifyService.getCurrentlyPlayingTrack(user)).thenReturn(track);
+
+            musicSyncService.syncMusicStatus();
+
+            verify(slackService, never()).updateUserStatus(any(), any(), any(), any(), any());
+            verify(slackService).clearUserStatus(user);
+        }
+
+        @Test
+        @DisplayName("should sync podcast when content type is PODCASTS only")
+        void shouldSyncPodcastWhenContentTypePodcastsOnly() {
+            User user = TestDataFactory.createUserWithSpotify();
+            user.setCurrentlyPlayingSongId(null);
+            UserSettings settings = TestDataFactory.createUserSettingsWithSyncContentType(
+                    user.getId(), SyncContentType.PODCASTS);
+            CurrentlyPlayingTrackInfo episode = TestDataFactory.createEpisodeInfo();
+
+            when(userService.findAllActiveUsers()).thenReturn(List.of(user));
+            when(userService.getUserSettings(user.getId())).thenReturn(Optional.of(settings));
+            when(slackService.hasManualStatusChange(user)).thenReturn(false);
+            when(spotifyService.getCurrentlyPlayingTrack(user)).thenReturn(episode);
+
+            musicSyncService.syncMusicStatus();
+
+            verify(slackService).updateUserStatus(eq(user), any(), any(), any(), any());
         }
     }
 

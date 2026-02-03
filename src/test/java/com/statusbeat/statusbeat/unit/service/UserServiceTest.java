@@ -448,4 +448,32 @@ class UserServiceTest extends TestBase {
             assertThat(captor.getValue().getDefaultEmoji()).isEqualTo(":headphones:");
         }
     }
+
+    @Nested
+    @DisplayName("deleteUserCompletely")
+    class DeleteUserCompletelyTests {
+
+        @Test
+        @DisplayName("should delete user and settings")
+        void shouldDeleteUserAndSettings() {
+            User user = TestDataFactory.createUser();
+
+            userService.deleteUserCompletely(user.getId());
+
+            verify(userSettingsRepository).deleteByUserId(user.getId());
+            verify(userRepository).deleteById(user.getId());
+        }
+
+        @Test
+        @DisplayName("should delete settings first then user")
+        void shouldDeleteSettingsFirstThenUser() {
+            User user = TestDataFactory.createUser();
+
+            userService.deleteUserCompletely(user.getId());
+
+            var inOrder = inOrder(userSettingsRepository, userRepository);
+            inOrder.verify(userSettingsRepository).deleteByUserId(user.getId());
+            inOrder.verify(userRepository).deleteById(user.getId());
+        }
+    }
 }
