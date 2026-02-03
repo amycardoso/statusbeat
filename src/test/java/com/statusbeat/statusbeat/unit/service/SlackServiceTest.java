@@ -199,33 +199,63 @@ class SlackServiceTest extends TestBase {
     }
 
     @Nested
-    @DisplayName("normalizeStatusText")
+    @DisplayName("hasManualStatusChange with HTML entity normalization")
     class NormalizeStatusTextTests {
 
         @Test
-        @DisplayName("should handle HTML entities in status comparison")
-        void shouldHandleHtmlEntities() {
-            // TODO: This test requires mocking the Slack API client to return a controlled value.
-            // Currently, the API call fails and the method returns false before normalization
-            // logic is ever executed. The test passes for the wrong reason.
-            //
-            // To properly test HTML entity normalization:
-            // 1. Mock the Slack client to return "Rock &amp; Roll" as current status
-            // 2. Set lastSetStatusText to "Rock & Roll"
-            // 3. Verify hasManualStatusChange returns false (entities normalized, strings match)
-            //
-            // Example (requires SlackService refactoring to inject mockable client):
-            // when(slackClient.getCurrentStatus(user)).thenReturn("Rock &amp; Roll");
-            // user.setLastSetStatusText("Rock & Roll");
-            // assertThat(slackService.hasManualStatusChange(user)).isFalse();
-
+        @DisplayName("should normalize &amp; entity when comparing statuses")
+        void shouldNormalizeAmpersandEntity() {
             User user = TestDataFactory.createUserWithSpotify();
             user.setLastSetStatusText("Rock & Roll");
 
-            boolean result = slackService.hasManualStatusChange(user);
+            SlackService spySlackService = spy(slackService);
+            doReturn("Rock &amp; Roll").when(spySlackService).getCurrentStatusText(user);
 
-            // This assertion passes because the API call fails, NOT because normalization works
+            boolean result = spySlackService.hasManualStatusChange(user);
+
             assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("should normalize &lt; and &gt; entities when comparing statuses")
+        void shouldNormalizeLtGtEntities() {
+            User user = TestDataFactory.createUserWithSpotify();
+            user.setLastSetStatusText("<code>");
+
+            SlackService spySlackService = spy(slackService);
+            doReturn("&lt;code&gt;").when(spySlackService).getCurrentStatusText(user);
+
+            boolean result = spySlackService.hasManualStatusChange(user);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("should normalize &quot; entity when comparing statuses")
+        void shouldNormalizeQuoteEntity() {
+            User user = TestDataFactory.createUserWithSpotify();
+            user.setLastSetStatusText("Say \"Hello\"");
+
+            SlackService spySlackService = spy(slackService);
+            doReturn("Say &quot;Hello&quot;").when(spySlackService).getCurrentStatusText(user);
+
+            boolean result = spySlackService.hasManualStatusChange(user);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("should detect actual status change even with entity normalization")
+        void shouldDetectActualStatusChange() {
+            User user = TestDataFactory.createUserWithSpotify();
+            user.setLastSetStatusText("Rock & Roll");
+
+            SlackService spySlackService = spy(slackService);
+            doReturn("Different Status").when(spySlackService).getCurrentStatusText(user);
+
+            boolean result = spySlackService.hasManualStatusChange(user);
+
+            assertThat(result).isTrue();
         }
     }
 
