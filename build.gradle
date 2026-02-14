@@ -45,7 +45,7 @@ dependencies {
 	implementation 'org.bouncycastle:bcprov-jdk18on:1.83'
 
 	// Retry
-	implementation 'org.springframework.retry:spring-retry:2.0.11'
+	implementation 'org.springframework.retry:spring-retry:2.0.12'
 	implementation 'org.springframework:spring-aspects'
 
 	// Utilities
