@@ -6,8 +6,11 @@ import com.slack.api.methods.request.users.profile.UsersProfileSetRequest;
 import com.slack.api.methods.response.users.profile.UsersProfileSetResponse;
 import com.slack.api.model.User.Profile;
 import com.statusbeat.statusbeat.constants.AppConstants;
+import com.statusbeat.statusbeat.model.BotInstallation;
 import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.model.UserSettings;
+import com.statusbeat.statusbeat.repository.BotInstallationRepository;
+import com.statusbeat.statusbeat.util.EncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +29,8 @@ public class SlackService {
 
     private final UserService userService;
     private final TokenValidationService tokenValidationService;
+    private final BotInstallationRepository botInstallationRepository;
+    private final EncryptionUtil encryptionUtil;
     private final com.slack.api.Slack slack = com.slack.api.Slack.getInstance();
 
     @Value("${statusbeat.sync.expiration-overhead-ms:120000}")
@@ -80,11 +85,17 @@ public class SlackService {
 
                 // Try to send notification (might fail if token is completely invalid)
                 try {
-                    String notificationMessage = "⚠️ *Your Slack connection has been revoked*\n\n" +
-                            "StatusBeat can no longer update your Slack status. " +
-                            "To resume automatic status updates, please reinstall the app.";
-                    sendMessage(userService.getDecryptedSlackBotToken(user), user.getSlackUserId(), notificationMessage);
-                    log.info("Sent invalidation notification to user {}", user.getSlackUserId());
+                    String botToken = getDecryptedBotToken(user.getSlackTeamId());
+                    if (botToken != null) {
+                        String notificationMessage = "⚠️ *Your Slack connection has been revoked*\n\n" +
+                                "StatusBeat can no longer update your Slack status. " +
+                                "To resume automatic status updates, please reinstall the app.";
+                        sendMessage(botToken, user.getSlackUserId(), notificationMessage);
+                        log.info("Sent invalidation notification to user {}", user.getSlackUserId());
+                    } else {
+                        log.warn("No bot token found for team {}, cannot send invalidation notification",
+                                user.getSlackTeamId());
+                    }
                 } catch (Exception notifyError) {
                     log.warn("Could not send invalidation notification to user {}: {}",
                             user.getSlackUserId(), notifyError.getMessage());
@@ -289,6 +300,16 @@ public class SlackService {
                 .replace("&gt;", ">")
                 .replace("&quot;", "\"")
                 .replace("&#39;", "'");
+    }
+
+    /**
+     * Retrieves the decrypted bot token for a given team ID.
+     */
+    public String getDecryptedBotToken(String teamId) {
+        return botInstallationRepository.findByTeamId(teamId)
+                .map(BotInstallation::getEncryptedBotToken)
+                .map(encryptionUtil::decrypt)
+                .orElse(null);
     }
 
     public String sendMessage(String accessToken, String channel, String message) {

@@ -5,9 +5,10 @@ import com.slack.api.bolt.model.Installer;
 import com.slack.api.bolt.model.builtin.DefaultBot;
 import com.slack.api.bolt.model.builtin.DefaultInstaller;
 import com.slack.api.bolt.service.InstallationService;
-import com.slack.api.model.Conversation;
+import com.statusbeat.statusbeat.model.BotInstallation;
 import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.model.UserSettings;
+import com.statusbeat.statusbeat.repository.BotInstallationRepository;
 import com.statusbeat.statusbeat.repository.UserRepository;
 import com.statusbeat.statusbeat.repository.UserSettingsRepository;
 import com.statusbeat.statusbeat.util.EncryptionUtil;
@@ -25,6 +26,7 @@ public class MongoDBInstallationService implements InstallationService {
 
     private final UserRepository userRepository;
     private final UserSettingsRepository userSettingsRepository;
+    private final BotInstallationRepository botInstallationRepository;
     private final SlackService slackService;
     private final EncryptionUtil encryptionUtil;
     private boolean historicalDataEnabled = false;
@@ -125,28 +127,32 @@ public class MongoDBInstallationService implements InstallationService {
             throw new IllegalArgumentException("Bot teamId cannot be null");
         }
 
-        // Find user by team ID and update with bot token
-        Optional<User> userOpt = userRepository.findBySlackTeamId(bot.getTeamId());
+        Optional<BotInstallation> existingBot = botInstallationRepository.findByTeamId(bot.getTeamId());
 
-        if (userOpt.isEmpty()) {
-            log.error("No user found for teamId: {} - cannot save bot token", bot.getTeamId());
-            return;
+        BotInstallation botInstallation;
+        if (existingBot.isPresent()) {
+            botInstallation = existingBot.get();
+            botInstallation.setEncryptedBotToken(encryptionUtil.encrypt(bot.getBotAccessToken()));
+            botInstallation.setBotUserId(bot.getBotUserId());
+            botInstallation.setUpdatedAt(java.time.LocalDateTime.now());
+        } else {
+            botInstallation = BotInstallation.builder()
+                    .teamId(bot.getTeamId())
+                    .encryptedBotToken(encryptionUtil.encrypt(bot.getBotAccessToken()))
+                    .botUserId(bot.getBotUserId())
+                    .createdAt(java.time.LocalDateTime.now())
+                    .updatedAt(java.time.LocalDateTime.now())
+                    .build();
         }
 
-        User user = userOpt.get();
-        user.setEncryptedSlackBotToken(encryptionUtil.encrypt(bot.getBotAccessToken()));
-        user.setUpdatedAt(java.time.LocalDateTime.now());
-
-        userRepository.save(user);
-        log.info("=== BOT TOKEN SAVED === UserId: {}, TeamId: {}",
-                user.getId(), user.getSlackTeamId());
+        botInstallationRepository.save(botInstallation);
+        log.info("=== BOT TOKEN SAVED === TeamId: {}", bot.getTeamId());
     }
 
     @Override
     public void deleteBot(Bot bot) throws Exception {
-        if (bot != null && bot.getEnterpriseId() != null) {
-            userRepository.findBySlackTeamId(bot.getEnterpriseId())
-                    .ifPresent(userRepository::delete);
+        if (bot != null && bot.getTeamId() != null) {
+            botInstallationRepository.deleteByTeamId(bot.getTeamId());
         }
     }
 
@@ -162,26 +168,26 @@ public class MongoDBInstallationService implements InstallationService {
     public Bot findBot(String enterpriseId, String teamId) {
         log.debug("Finding bot for enterpriseId: {}, teamId: {}", enterpriseId, teamId);
 
-        Optional<User> userOpt = userRepository.findBySlackTeamId(teamId);
+        Optional<BotInstallation> botOpt = botInstallationRepository.findByTeamId(teamId);
 
-        if (userOpt.isEmpty()) {
-            log.warn("No installation found for teamId: {}", teamId);
+        if (botOpt.isEmpty()) {
+            log.warn("No bot installation found for teamId: {}", teamId);
             return null;
         }
 
-        User user = userOpt.get();
+        BotInstallation botInstallation = botOpt.get();
 
         DefaultBot bot = new DefaultBot();
         bot.setEnterpriseId(enterpriseId);
         bot.setTeamId(teamId);
         bot.setScope("commands,app_mentions:read,chat:write");
-        String decryptedBotToken = user.getEncryptedSlackBotToken() != null
-                ? encryptionUtil.decrypt(user.getEncryptedSlackBotToken())
+        String decryptedBotToken = botInstallation.getEncryptedBotToken() != null
+                ? encryptionUtil.decrypt(botInstallation.getEncryptedBotToken())
                 : null;
         bot.setBotAccessToken(decryptedBotToken);
-        bot.setBotUserId(user.getSlackUserId());
-        bot.setInstalledAt(user.getCreatedAt() != null ?
-            user.getCreatedAt().atZone(ZoneId.systemDefault()).toEpochSecond() : null);
+        bot.setBotUserId(botInstallation.getBotUserId());
+        bot.setInstalledAt(botInstallation.getCreatedAt() != null ?
+            botInstallation.getCreatedAt().atZone(ZoneId.systemDefault()).toEpochSecond() : null);
 
         log.info("Found bot installation for teamId: {}, bot token present: {}",
                 teamId, decryptedBotToken != null);

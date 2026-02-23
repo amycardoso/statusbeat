@@ -27,8 +27,6 @@ public class User {
 
     private String encryptedSlackAccessToken;
 
-    private String encryptedSlackBotToken;
-
     private String spotifyUserId;
 
     private String encryptedSpotifyAccessToken;

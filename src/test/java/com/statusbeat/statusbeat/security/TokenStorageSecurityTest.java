@@ -1,7 +1,7 @@
 package com.statusbeat.statusbeat.security;
 
+import com.statusbeat.statusbeat.model.BotInstallation;
 import com.statusbeat.statusbeat.model.User;
-import com.statusbeat.statusbeat.repository.UserRepository;
 import com.statusbeat.statusbeat.service.UserService;
 import com.statusbeat.statusbeat.testutil.IntegrationTestBase;
 import com.statusbeat.statusbeat.testutil.TestDataFactory;
@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -227,18 +226,16 @@ class TokenStorageSecurityTest extends IntegrationTestBase {
         void shouldEncryptSlackBotToken() {
             String plainToken = "xoxb-test-bot-token";
 
-            User user = TestDataFactory.createUser();
-            user = userRepository.save(user);
+            BotInstallation bot = TestDataFactory.createBotInstallation("T_BOT_TEST");
+            bot.setEncryptedBotToken(encryptionUtil.encrypt(plainToken));
+            bot = botInstallationRepository.save(bot);
 
-            user.setEncryptedSlackBotToken(encryptionUtil.encrypt(plainToken));
-            user = userRepository.save(user);
+            BotInstallation savedBot = botInstallationRepository.findByTeamId("T_BOT_TEST").orElseThrow();
 
-            User savedUser = userRepository.findById(user.getId()).orElseThrow();
+            assertThat(savedBot.getEncryptedBotToken()).isNotNull();
+            assertThat(savedBot.getEncryptedBotToken()).isNotEqualTo(plainToken);
 
-            assertThat(savedUser.getEncryptedSlackBotToken()).isNotNull();
-            assertThat(savedUser.getEncryptedSlackBotToken()).isNotEqualTo(plainToken);
-
-            String decrypted = userService.getDecryptedSlackBotToken(savedUser);
+            String decrypted = encryptionUtil.decrypt(savedBot.getEncryptedBotToken());
             assertThat(decrypted).isEqualTo(plainToken);
         }
     }

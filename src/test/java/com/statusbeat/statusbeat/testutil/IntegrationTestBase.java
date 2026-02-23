@@ -1,5 +1,6 @@
 package com.statusbeat.statusbeat.testutil;
 
+import com.statusbeat.statusbeat.repository.BotInstallationRepository;
 import com.statusbeat.statusbeat.repository.OAuthStateRepository;
 import com.statusbeat.statusbeat.repository.UserRepository;
 import com.statusbeat.statusbeat.repository.UserSettingsRepository;
@@ -24,11 +25,15 @@ public abstract class IntegrationTestBase {
     @Autowired
     protected OAuthStateRepository oauthStateRepository;
 
+    @Autowired
+    protected BotInstallationRepository botInstallationRepository;
+
     @BeforeEach
     @Transactional
     void cleanDatabase() {
         userSettingsRepository.deleteAll();
         oauthStateRepository.deleteAll();
+        botInstallationRepository.deleteAll();
         userRepository.deleteAll();
     }
 }

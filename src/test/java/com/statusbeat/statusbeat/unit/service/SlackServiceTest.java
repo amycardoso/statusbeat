@@ -2,11 +2,13 @@ package com.statusbeat.statusbeat.unit.service;
 
 import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.model.UserSettings;
+import com.statusbeat.statusbeat.repository.BotInstallationRepository;
 import com.statusbeat.statusbeat.service.SlackService;
 import com.statusbeat.statusbeat.service.TokenValidationService;
 import com.statusbeat.statusbeat.service.UserService;
 import com.statusbeat.statusbeat.testutil.TestBase;
 import com.statusbeat.statusbeat.testutil.TestDataFactory;
+import com.statusbeat.statusbeat.util.EncryptionUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -29,11 +31,17 @@ class SlackServiceTest extends TestBase {
     @Mock
     private TokenValidationService tokenValidationService;
 
+    @Mock
+    private BotInstallationRepository botInstallationRepository;
+
+    @Mock
+    private EncryptionUtil encryptionUtil;
+
     private SlackService slackService;
 
     @BeforeEach
     void setUp() {
-        slackService = new SlackService(userService, tokenValidationService);
+        slackService = new SlackService(userService, tokenValidationService, botInstallationRepository, encryptionUtil);
         ReflectionTestUtils.setField(slackService, "expirationOverheadMs", 120000L);
     }
 

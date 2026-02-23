@@ -1,5 +1,6 @@
 package com.statusbeat.statusbeat.testutil;
 
+import com.statusbeat.statusbeat.model.BotInstallation;
 import com.statusbeat.statusbeat.model.CurrentlyPlayingTrackInfo;
 import com.statusbeat.statusbeat.model.OAuthState;
 import com.statusbeat.statusbeat.model.SyncContentType;
@@ -24,7 +25,6 @@ public final class TestDataFactory {
                 .slackUserId(slackUserId)
                 .slackTeamId("T" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .encryptedSlackAccessToken("encrypted-slack-access-token")
-                .encryptedSlackBotToken("encrypted-slack-bot-token")
                 .active(true)
                 .statusCleared(true)
                 .manualStatusSet(false)
@@ -206,5 +206,20 @@ public final class TestDataFactory {
 
     public static String createSlackBotToken() {
         return "xoxb-" + UUID.randomUUID().toString().replace("-", "");
+    }
+
+    public static BotInstallation createBotInstallation(String teamId) {
+        return BotInstallation.builder()
+                .id(UUID.randomUUID().toString())
+                .teamId(teamId)
+                .encryptedBotToken("encrypted-bot-token")
+                .botUserId("B" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public static BotInstallation createBotInstallation() {
+        return createBotInstallation("T" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
     }
 }

@@ -102,13 +102,6 @@ public class UserService {
         return encryptionUtil.decrypt(user.getEncryptedSlackAccessToken());
     }
 
-    public String getDecryptedSlackBotToken(User user) {
-        if (user.getEncryptedSlackBotToken() == null) {
-            return null;
-        }
-        return encryptionUtil.decrypt(user.getEncryptedSlackBotToken());
-    }
-
     public boolean isSpotifyTokenExpired(User user) {
         if (user.getSpotifyTokenExpiresAt() == null) {
             return true;
