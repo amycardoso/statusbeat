@@ -3,6 +3,7 @@ package com.statusbeat.statusbeat.service;
 import com.slack.api.methods.MethodsClient;
 import com.slack.api.methods.SlackApiException;
 import com.slack.api.methods.request.views.ViewsPublishRequest;
+import com.slack.api.model.block.LayoutBlock;
 import com.slack.api.model.view.View;
 import com.statusbeat.statusbeat.constants.AppConstants;
 import com.statusbeat.statusbeat.model.User;
@@ -12,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.slack.api.model.block.Blocks.*;
@@ -94,79 +97,125 @@ public class AppHomeService {
         boolean tokenInvalidated = user.isTokenInvalidated();
         boolean spotifyConnected = user.getEncryptedSpotifyAccessToken() != null;
 
-        return view(view -> view
-                .type("home")
-                .blocks(asBlocks(
-                        header(header -> header.text(plainText(":musical_note: StatusBeat"))),
-                        divider(),
-                        buildConnectionStatusSection(spotifyConnected, tokenInvalidated),
-                        buildCurrentPlayingSection(user),
-                        divider(),
-                        section(section -> section
-                                .text(markdownText("*:gear: Sync Settings*"))
-                        ),
-                        section(section -> section
-                                .text(markdownText(
-                                        String.format("*Status:* %s\n*Sync:* %s\n*Content:* %s\n*Emoji:* %s\n*Rotating Emojis:* %s\n*Show Artist:* %s\n*Show Title:* %s",
-                                                settings.isSyncEnabled() ? ":white_check_mark: Enabled" : ":no_entry: Disabled",
-                                                getSyncStateDisplay(settings),
-                                                getContentTypeDisplay(settings),
-                                                settings.getDefaultEmoji(),
-                                                getRotatingEmojisDisplay(settings),
-                                                settings.isShowArtist() ? "Yes" : "No",
-                                                settings.isShowSongTitle() ? "Yes" : "No"
-                                        )
-                                ))
-                        ),
-                        buildWorkingHoursSection(settings),
-                        divider(),
-                        buildDeviceTrackingSection(settings),
-                        divider(),
-                        buildActionButtons(settings, tokenInvalidated),
-                        divider(),
-                        context(context -> context.elements(asContextElements(
-                                markdownText(":information_source: Use `/statusbeat help` to see available commands")
-                        )))
-                ))
-        );
+        List<LayoutBlock> blocks = new ArrayList<>();
+
+        // Header + tagline
+        blocks.add(header(header -> header.text(plainText(":musical_note: StatusBeat"))));
+        blocks.add(context(ctx -> ctx.elements(asContextElements(
+                markdownText("Your music, your status, automatically.")
+        ))));
+        blocks.add(divider());
+
+        // Connection
+        blocks.addAll(buildConnectionSection(user, spotifyConnected, tokenInvalidated));
+        blocks.add(divider());
+
+        // Sync Settings
+        blocks.addAll(buildSyncSettingsSection(settings));
+        blocks.add(divider());
+
+        // Display
+        blocks.addAll(buildDisplaySection(settings));
+        blocks.add(divider());
+
+        // Schedule & Devices
+        blocks.addAll(buildScheduleAndDevicesSection(settings));
+        blocks.add(divider());
+
+        // Actions
+        blocks.add(buildActionButtons(settings, tokenInvalidated));
+        blocks.add(divider());
+        blocks.add(context(ctx -> ctx.elements(asContextElements(
+                markdownText(":information_source: Use `/statusbeat help` to see available commands")
+        ))));
+
+        return view(v -> v.type("home").blocks(blocks));
     }
 
-    private com.slack.api.model.block.LayoutBlock buildConnectionStatusSection(
-            boolean spotifyConnected, boolean tokenInvalidated) {
+    private List<LayoutBlock> buildConnectionSection(
+            User user, boolean spotifyConnected, boolean tokenInvalidated) {
+
+        List<LayoutBlock> blocks = new ArrayList<>();
 
         String spotifyStatus;
         if (tokenInvalidated) {
-            spotifyStatus = ":warning: *Reconnection Required*";
+            spotifyStatus = ":warning: Reconnection Required";
         } else if (spotifyConnected) {
             spotifyStatus = ":white_check_mark: Connected";
         } else {
             spotifyStatus = ":x: Not Connected";
         }
 
-        return section(section -> section
-                .text(markdownText(String.format(
-                        "*:link: Connection Status*\n\n*Spotify:* %s",
-                        spotifyStatus
-                )))
-        );
-    }
+        blocks.add(section(s -> s.fields(asSectionFields(
+                markdownText("*:link: Spotify*"),
+                markdownText(spotifyStatus)
+        ))));
 
-    private com.slack.api.model.block.LayoutBlock buildCurrentPlayingSection(User user) {
-        String nowPlayingText;
         if (user.getCurrentlyPlayingSongTitle() != null) {
-            nowPlayingText = String.format("*:headphones: Now Playing*\n\n%s - %s",
-                    user.getCurrentlyPlayingSongTitle(),
-                    user.getCurrentlyPlayingArtist());
+            String artist = user.getCurrentlyPlayingArtist();
+            String nowPlaying = (artist != null && !artist.isBlank())
+                    ? String.format(":headphones: *Now Playing:* %s — %s",
+                            user.getCurrentlyPlayingSongTitle(), artist)
+                    : String.format(":headphones: *Now Playing:* %s",
+                            user.getCurrentlyPlayingSongTitle());
+            blocks.add(section(s -> s.text(markdownText(nowPlaying))));
         } else {
-            nowPlayingText = "*:headphones: Now Playing*\n\nNothing is playing right now";
+            blocks.add(context(ctx -> ctx.elements(asContextElements(
+                    markdownText(":headphones: _Nothing playing right now_")
+            ))));
         }
 
-        return section(section -> section.text(markdownText(nowPlayingText)));
+        return blocks;
     }
 
-    private com.slack.api.model.block.LayoutBlock buildWorkingHoursSection(UserSettings settings) {
-        String workingHoursText;
+    private List<LayoutBlock> buildSyncSettingsSection(UserSettings settings) {
+        List<LayoutBlock> blocks = new ArrayList<>();
 
+        blocks.add(header(h -> h.text(plainText(":gear: Sync Settings"))));
+
+        blocks.add(section(s -> s.fields(asSectionFields(
+                markdownText("*Status*\n" + (settings.isSyncEnabled()
+                        ? ":white_check_mark: Enabled" : ":no_entry: Disabled")),
+                markdownText("*Sync*\n" + getSyncStateDisplay(settings))
+        ))));
+
+        blocks.add(section(s -> s.fields(asSectionFields(
+                markdownText("*Content Type*\n" + getContentTypeDisplay(settings)),
+                markdownText("*Emoji*\n" + (settings.getDefaultEmoji() != null
+                        ? settings.getDefaultEmoji() : ":musical_note:"))
+        ))));
+
+        String rotatingEmojis = getRotatingEmojisDisplay(settings);
+        if (!"Not configured".equals(rotatingEmojis)) {
+            blocks.add(context(ctx -> ctx.elements(asContextElements(
+                    markdownText(":arrows_counterclockwise: Rotating: " + rotatingEmojis)
+            ))));
+        }
+
+        return blocks;
+    }
+
+    private List<LayoutBlock> buildDisplaySection(UserSettings settings) {
+        List<LayoutBlock> blocks = new ArrayList<>();
+
+        blocks.add(header(h -> h.text(plainText(":art: Display"))));
+
+        blocks.add(section(s -> s.fields(asSectionFields(
+                markdownText("*Show Artist*\n" + (settings.isShowArtist()
+                        ? ":white_check_mark: Yes" : ":x: No")),
+                markdownText("*Show Title*\n" + (settings.isShowSongTitle()
+                        ? ":white_check_mark: Yes" : ":x: No"))
+        ))));
+
+        return blocks;
+    }
+
+    private List<LayoutBlock> buildScheduleAndDevicesSection(UserSettings settings) {
+        List<LayoutBlock> blocks = new ArrayList<>();
+
+        blocks.add(header(h -> h.text(plainText(":calendar: Schedule & Devices"))));
+
+        String workingHoursText;
         if (settings.isWorkingHoursEnabled() &&
             settings.getSyncStartHour() != null &&
             settings.getSyncEndHour() != null &&
@@ -180,33 +229,29 @@ public class AppHomeService {
                     settings.getTimezoneOffsetSeconds());
 
             workingHoursText = String.format(
-                    "*:clock3: Working Hours*\n\n*Enabled:* Yes\n*Hours:* %s - %s (your local time)",
-                    startTimeLocal, endTimeLocal
-            );
+                    ":clock3: *Working Hours:* %s – %s (your local time)",
+                    startTimeLocal, endTimeLocal);
         } else {
-            workingHoursText = "*:clock3: Working Hours*\n\n*Enabled:* No (syncing 24/7)";
+            workingHoursText = ":clock3: *Working Hours:* Syncing 24/7";
         }
 
-        return section(section -> section.text(markdownText(workingHoursText)));
-    }
+        blocks.add(section(s -> s.text(markdownText(workingHoursText))));
 
-    private com.slack.api.model.block.LayoutBlock buildDeviceTrackingSection(UserSettings settings) {
         String deviceText;
-
         if (settings.getAllowedDeviceIds() == null || settings.getAllowedDeviceIds().isEmpty()) {
-            deviceText = "*:computer: Device Tracking*\n\n*Tracking:* All devices";
+            deviceText = ":computer: *Devices:* Tracking all devices";
         } else {
             int deviceCount = settings.getAllowedDeviceIds().size();
-            deviceText = String.format("*:computer: Device Tracking*\n\n*Tracking:* %d selected device%s",
+            deviceText = String.format(":computer: *Devices:* Tracking %d selected device%s",
                     deviceCount, deviceCount == 1 ? "" : "s");
         }
 
-        return section(section -> section.text(markdownText(deviceText)));
+        blocks.add(section(s -> s.text(markdownText(deviceText))));
+
+        return blocks;
     }
 
-    private com.slack.api.model.block.LayoutBlock buildActionButtons(
-            UserSettings settings, boolean tokenInvalidated) {
-
+    private LayoutBlock buildActionButtons(UserSettings settings, boolean tokenInvalidated) {
         if (tokenInvalidated) {
             return actions(actions -> actions
                     .blockId("home_actions")
@@ -219,7 +264,6 @@ public class AppHomeService {
                     ))
             );
         } else if (!settings.isSyncEnabled()) {
-            // Sync is disabled - show enable button
             return actions(actions -> actions
                     .blockId("home_actions")
                     .elements(asElements(
@@ -243,7 +287,6 @@ public class AppHomeService {
                     ))
             );
         } else {
-            // Sync is enabled - show start/stop and disable buttons
             return actions(actions -> actions
                     .blockId("home_actions")
                     .elements(asElements(
