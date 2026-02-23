@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StatusBeat - Privacy Policy</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .window-frame {
+            margin: 0;
+            max-width: 720px;
+        }
+
+        .window-content {
+            padding: 32px 40px;
+        }
+
+        .page-title {
+            font-size: 18px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            font-family: var(--font-ui);
+            font-size: 14px;
+            color: var(--pixel-cyan);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .section p, .section li {
+            font-family: var(--font-ui);
+            font-size: 14px;
+            color: var(--pixel-white);
+            line-height: 1.6;
+        }
+
+        .section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .section ul li::before {
+            content: "> ";
+            color: var(--pixel-green-glow);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 16px;
+            font-family: var(--font-ui);
+            font-size: 13px;
+            color: var(--pixel-cyan);
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: var(--pixel-green-glow);
+        }
+
+        .updated {
+            font-family: var(--font-ui);
+            font-size: 11px;
+            color: var(--pixel-gray);
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 500px) {
+            .window-content { padding: 20px 16px; }
+            .page-title { font-size: 14px; }
+        }
+    </style>
+</head>
+<body class="pixel-bg">
+    <div class="window-frame">
+        <div class="window-title-bar">
+            <div class="window-title">
+                <span class="window-title-icon">🔒</span>
+                <span>StatusBeat - Privacy Policy</span>
+            </div>
+            <div class="window-controls">
+                <div class="window-btn">_</div>
+                <div class="window-btn">O</div>
+                <div class="window-btn">X</div>
+            </div>
+        </div>
+
+        <main class="window-content">
+            <h1 class="page-title glitch-text">// Privacy Policy</h1>
+
+            <div class="section">
+                <h2>What We Collect</h2>
+                <p>StatusBeat only stores the minimum data needed to sync your Spotify status to Slack:</p>
+                <ul>
+                    <li>Your Slack user ID and OAuth tokens</li>
+                    <li>Your Spotify OAuth tokens</li>
+                    <li>Your sync preferences and settings</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>How We Use It</h2>
+                <p>Your data is used exclusively to read your currently playing Spotify track and update your Slack status. We do not sell, share, or use your data for any other purpose.</p>
+            </div>
+
+            <div class="section">
+                <h2>Data Security</h2>
+                <p>All OAuth tokens are encrypted at rest using AES-256 encryption. Data is stored in a secured MongoDB database.</p>
+            </div>
+
+            <div class="section">
+                <h2>Third-Party Services</h2>
+                <p>StatusBeat connects to Slack and Spotify APIs. Your use of those services is governed by their own privacy policies.</p>
+            </div>
+
+            <div class="section">
+                <h2>Data Deletion</h2>
+                <p>You can delete all your data at any time by running <code>/statusbeat purge</code> in Slack. This permanently removes your account and all associated tokens.</p>
+            </div>
+
+            <div class="section">
+                <h2>Contact</h2>
+                <p>Questions about privacy? Reach out via our <a th:href="@{/support}" style="color: var(--pixel-cyan);">support page</a>.</p>
+            </div>
+
+            <p class="updated">Last updated: February 2026</p>
+
+            <a th:href="@{/}" class="back-link">&lt;&lt; Back to home</a>
+        </main>
+
+        <div class="window-status-bar">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>PRIVACY.TXT</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

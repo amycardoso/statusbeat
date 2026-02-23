@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StatusBeat - Support</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .window-frame {
+            margin: 0;
+            max-width: 720px;
+        }
+
+        .window-content {
+            padding: 32px 40px;
+        }
+
+        .page-title {
+            font-size: 18px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            font-family: var(--font-ui);
+            font-size: 14px;
+            color: var(--pixel-cyan);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .section p, .section li {
+            font-family: var(--font-ui);
+            font-size: 14px;
+            color: var(--pixel-white);
+            line-height: 1.6;
+        }
+
+        .section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .section ul li {
+            margin-bottom: 6px;
+        }
+
+        .section ul li::before {
+            content: "> ";
+            color: var(--pixel-green-glow);
+        }
+
+        .command-highlight {
+            font-size: 16px;
+            padding: 4px 8px;
+            color: var(--pixel-cyan);
+            background: rgba(58, 190, 255, 0.1);
+            border: 1px solid var(--pixel-cyan);
+        }
+
+        .support-link {
+            color: var(--pixel-cyan);
+            text-decoration: none;
+        }
+
+        .support-link:hover {
+            color: var(--pixel-green-glow);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 16px;
+            font-family: var(--font-ui);
+            font-size: 13px;
+            color: var(--pixel-cyan);
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: var(--pixel-green-glow);
+        }
+
+        @media (max-width: 500px) {
+            .window-content { padding: 20px 16px; }
+            .page-title { font-size: 14px; }
+        }
+    </style>
+</head>
+<body class="pixel-bg">
+    <div class="window-frame">
+        <div class="window-title-bar">
+            <div class="window-title">
+                <span class="window-title-icon">?</span>
+                <span>StatusBeat - Support</span>
+            </div>
+            <div class="window-controls">
+                <div class="window-btn">_</div>
+                <div class="window-btn">O</div>
+                <div class="window-btn">X</div>
+            </div>
+        </div>
+
+        <main class="window-content">
+            <h1 class="page-title glitch-text">// Support</h1>
+
+            <div class="section">
+                <h2>Quick Help</h2>
+                <p>Run <code class="command-highlight">/statusbeat help</code> in Slack for a quick overview of all commands.</p>
+            </div>
+
+            <div class="section">
+                <h2>Common Issues</h2>
+                <ul>
+                    <li><strong>Status not updating?</strong> Try <code>/statusbeat reconnect</code> to relink Spotify.</li>
+                    <li><strong>Want to start fresh?</strong> Use <code>/statusbeat purge</code> then reinstall.</li>
+                    <li><strong>Sync paused?</strong> Run <code>/statusbeat enable</code> to resume.</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>Report Issues</h2>
+                <p>Found a bug or have a feature request? Open an issue on <a href="https://github.com/ameliaalicecardoso/statusbeat/issues" class="support-link">GitHub</a>.</p>
+            </div>
+
+            <div class="section">
+                <h2>Delete Your Data</h2>
+                <p>To permanently remove your account and all data, run <code>/statusbeat purge</code> in Slack.</p>
+            </div>
+
+            <a th:href="@{/}" class="back-link">&lt;&lt; Back to home</a>
+        </main>
+
+        <div class="window-status-bar">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>HELP.TXT</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

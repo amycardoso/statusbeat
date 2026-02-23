@@ -24,4 +24,14 @@ public class HomeController {
         model.addAttribute("error", message != null ? message : "An error occurred");
         return "error";
     }
+
+    @GetMapping("/privacy")
+    public String privacy() {
+        return "privacy";
+    }
+
+    @GetMapping("/support")
+    public String support() {
+        return "support";
+    }
 }
