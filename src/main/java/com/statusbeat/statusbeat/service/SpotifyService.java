@@ -236,8 +236,13 @@ public class SpotifyService {
             log.warn("Unauthorized - token expired for user {}", user.getSlackUserId());
             throw new SpotifyTokenExpiredException();
         } catch (ForbiddenException e) {
-            log.warn("Forbidden - Premium required for user {}", user.getSlackUserId());
-            throw new SpotifyPremiumRequiredException();
+            String message = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            if (message.contains("premium")) {
+                log.warn("Forbidden - Premium required for user {}", user.getSlackUserId());
+                throw new SpotifyPremiumRequiredException();
+            }
+            log.warn("Forbidden - player restriction for user {}: {}", user.getSlackUserId(), e.getMessage());
+            throw new SpotifyException("Player command failed: " + e.getMessage(), e);
         } catch (TooManyRequestsException e) {
             log.warn("Rate limited for user {}", user.getSlackUserId());
             throw new SpotifyRateLimitException();
