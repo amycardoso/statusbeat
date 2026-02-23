@@ -125,6 +125,16 @@ public class SlackService {
         }
     }
 
+    public void forceClearUserStatus(User user) {
+        try {
+            setSlackStatus(userService.getDecryptedSlackAccessToken(user), "", "", null);
+            log.info("Force-cleared Slack status for user {}", user.getSlackUserId());
+        } catch (Exception e) {
+            log.error("Error force-clearing Slack status for user {}", user.getSlackUserId(), e);
+            throw new RuntimeException(AppConstants.ERROR_FAILED_TO_CLEAR_SLACK_STATUS, e);
+        }
+    }
+
     private void setSlackStatus(String accessToken, String statusText, String statusEmoji, Long statusExpiration)
             throws IOException, SlackApiException {
         MethodsClient client = slack.methods(accessToken);

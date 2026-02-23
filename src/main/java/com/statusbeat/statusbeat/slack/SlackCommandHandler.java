@@ -10,6 +10,7 @@ import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.model.UserSettings;
 import com.statusbeat.statusbeat.service.ErrorMessageService;
 import com.statusbeat.statusbeat.service.MusicSyncService;
+import com.statusbeat.statusbeat.service.SlackService;
 import com.statusbeat.statusbeat.service.SpotifyService;
 import com.statusbeat.statusbeat.service.UserService;
 import jakarta.annotation.PostConstruct;
@@ -28,6 +29,7 @@ public class SlackCommandHandler {
     private final UserService userService;
     private final SpotifyService spotifyService;
     private final MusicSyncService musicSyncService;
+    private final SlackService slackService;
     private final ErrorMessageService errorMessageService;
 
     @PostConstruct
@@ -151,6 +153,14 @@ public class SlackCommandHandler {
             }
 
             User user = userOpt.get();
+
+            // Clear Slack status before deleting the account
+            try {
+                slackService.forceClearUserStatus(user);
+            } catch (Exception e) {
+                log.warn("Could not clear Slack status during purge for user {}: {}", slackUserId, e.getMessage());
+            }
+
             userService.deleteUserCompletely(user.getId());
 
             return ctx.ack(":wastebasket: Your StatusBeat account has been deleted. " +
