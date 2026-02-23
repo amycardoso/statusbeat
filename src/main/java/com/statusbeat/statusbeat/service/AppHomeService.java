@@ -152,11 +152,13 @@ public class AppHomeService {
         ))));
 
         if (user.getCurrentlyPlayingSongTitle() != null) {
-            blocks.add(section(s -> s.text(markdownText(
-                    String.format(":headphones: *Now Playing:* %s — %s",
-                            user.getCurrentlyPlayingSongTitle(),
-                            user.getCurrentlyPlayingArtist())
-            ))));
+            String artist = user.getCurrentlyPlayingArtist();
+            String nowPlaying = (artist != null && !artist.isBlank())
+                    ? String.format(":headphones: *Now Playing:* %s — %s",
+                            user.getCurrentlyPlayingSongTitle(), artist)
+                    : String.format(":headphones: *Now Playing:* %s",
+                            user.getCurrentlyPlayingSongTitle());
+            blocks.add(section(s -> s.text(markdownText(nowPlaying))));
         } else {
             blocks.add(context(ctx -> ctx.elements(asContextElements(
                     markdownText(":headphones: _Nothing playing right now_")
@@ -179,7 +181,8 @@ public class AppHomeService {
 
         blocks.add(section(s -> s.fields(asSectionFields(
                 markdownText("*Content Type*\n" + getContentTypeDisplay(settings)),
-                markdownText("*Emoji*\n" + settings.getDefaultEmoji())
+                markdownText("*Emoji*\n" + (settings.getDefaultEmoji() != null
+                        ? settings.getDefaultEmoji() : ":musical_note:"))
         ))));
 
         String rotatingEmojis = getRotatingEmojisDisplay(settings);
