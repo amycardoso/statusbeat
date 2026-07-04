@@ -1,7 +1,7 @@
 # StatusBeat
 
 ![Java](https://img.shields.io/badge/Java-25-orange)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.0-brightgreen)
 ![MongoDB](https://img.shields.io/badge/MongoDB-8.0-green)
 ![Slack API](https://img.shields.io/badge/Slack-API-4A154B)
 ![Spotify API](https://img.shields.io/badge/Spotify-API-1DB954)
@@ -28,7 +28,7 @@ Automatically sync your currently playing Spotify music with your Slack status.
 
 ## Tech Stack
 
-- **Backend**: Java 25 + Spring Boot 4.0.2
+- **Backend**: Java 25 + Spring Boot 4.1.0
 - **Database**: MongoDB
 - **APIs**: Slack API, Spotify Web API
 - **Security**: OAuth2, Spring Security, AES-256 encryption
@@ -58,7 +58,7 @@ Create a `.env` file:
 SLACK_CLIENT_ID=your_slack_client_id
 SLACK_CLIENT_SECRET=your_slack_client_secret
 SLACK_SIGNING_SECRET=your_slack_signing_secret
-SLACK_REDIRECT_URI=http://localhost:8080/oauth/slack/callback
+SLACK_REDIRECT_URI=http://localhost:8080/slack/oauth_redirect
 
 # Spotify Configuration
 SPOTIFY_CLIENT_ID=your_spotify_client_id
@@ -141,7 +141,9 @@ statusbeat.sync.polling-interval=10000
 ```
 src/main/java/com/statusbeat/statusbeat/
 ├── config/          # Configuration classes
-├── controller/      # REST controllers
+├── constants/       # Shared constants
+├── controller/      # Web and OAuth controllers
+├── exception/       # Custom exceptions
 ├── model/           # MongoDB entities
 ├── repository/      # Data access layer
 ├── service/         # Business logic
@@ -188,11 +190,15 @@ Update redirect URIs in Slack and Spotify apps to use your deployed URL.
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/` | GET | Home page |
-| `/oauth/slack` | GET | Initiate Slack OAuth |
-| `/oauth/slack/callback` | GET | Slack OAuth callback |
+| `/success` | GET | Connection success page |
+| `/error` | GET | Connection error page |
+| `/privacy` | GET | Privacy policy |
+| `/support` | GET | Support page |
+| `/slack/install` | GET | Initiate Slack OAuth |
+| `/slack/oauth_redirect` | GET | Slack OAuth callback |
+| `/slack/events` | POST | Slack events endpoint |
 | `/oauth/spotify` | GET | Initiate Spotify OAuth |
 | `/oauth/spotify/callback` | GET | Spotify OAuth callback |
-| `/slack/events` | POST | Slack events endpoint |
 | `/health` | GET | Health check |
 
 ## Contributing
