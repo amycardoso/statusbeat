@@ -87,7 +87,7 @@ public class SpotifyService {
             String accessToken = userService.getDecryptedSpotifyAccessToken(user);
             SpotifyApi spotifyApi = getSpotifyApi(accessToken);
 
-            var request = spotifyApi.getUsersAvailableDevices().build();
+            var request = spotifyApi.getAvailableDevices().build();
             var devices = request.execute();
 
             if (devices == null || devices.length == 0) {
@@ -130,7 +130,7 @@ public class SpotifyService {
             String accessToken = userService.getDecryptedSpotifyAccessToken(user);
             SpotifyApi spotifyApi = getSpotifyApi(accessToken);
 
-            var contextRequest = spotifyApi.getInformationAboutUsersCurrentPlayback().build();
+            var contextRequest = spotifyApi.getPlaybackState().build();
             CurrentlyPlayingContext context = contextRequest.execute();
 
             if (context == null || context.getItem() == null || !context.getIs_playing()) {
@@ -202,7 +202,7 @@ public class SpotifyService {
             executePlayerCommand(refreshedUser, "pause", () -> {
                 String accessToken = userService.getDecryptedSpotifyAccessToken(refreshedUser);
                 SpotifyApi spotifyApi = getSpotifyApi(accessToken);
-                spotifyApi.pauseUsersPlayback().build().execute();
+                spotifyApi.pausePlayback().build().execute();
             });
         } catch (IOException | ParseException | SpotifyWebApiException e) {
             log.error("Failed to refresh token for user {}", user.getSlackUserId(), e);
@@ -217,7 +217,7 @@ public class SpotifyService {
             executePlayerCommand(refreshedUser, "resume", () -> {
                 String accessToken = userService.getDecryptedSpotifyAccessToken(refreshedUser);
                 SpotifyApi spotifyApi = getSpotifyApi(accessToken);
-                spotifyApi.startResumeUsersPlayback().build().execute();
+                spotifyApi.startResumePlayback().build().execute();
             });
         } catch (IOException | ParseException | SpotifyWebApiException e) {
             log.error("Failed to refresh token for user {}", user.getSlackUserId(), e);
