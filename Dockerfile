@@ -34,5 +34,10 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
+# Size the heap from the container memory limit instead of the host's RAM.
+# SerialGC has the smallest footprint for a single small instance.
+# Override JAVA_TOOL_OPTIONS on the platform to tune.
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
+
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]

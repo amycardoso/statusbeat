@@ -7,6 +7,9 @@ import com.statusbeat.statusbeat.repository.UserRepository;
 import com.statusbeat.statusbeat.repository.UserSettingsRepository;
 import com.statusbeat.statusbeat.service.*;
 import com.statusbeat.statusbeat.testutil.TestDataFactory;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.SimpleLock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,11 +19,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -45,6 +52,9 @@ class FullSyncFlowE2ETest {
 
     @Autowired
     private MusicSyncService musicSyncService;
+
+    @Autowired
+    private LockProvider lockProvider;
 
     @MockitoBean
     private SpotifyService spotifyService;
@@ -355,6 +365,37 @@ class FullSyncFlowE2ETest {
 
             // Verify: Second user was still processed
             verify(spotifyService, times(2)).getCurrentlyPlayingTrack(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Distributed Lock")
+    class DistributedLockTests {
+
+        @Test
+        @DisplayName("should skip the cycle when another instance holds the sync lock")
+        void shouldSkipWhenLockHeldElsewhere() {
+            // Setup: Another instance is mid-cycle. Retry because the background
+            // scheduler in this test context may briefly hold the lock.
+            createActiveUser();
+            AtomicReference<SimpleLock> lock = new AtomicReference<>();
+            await().atMost(Duration.ofSeconds(5)).until(() -> {
+                lockProvider.lock(new LockConfiguration(
+                        Instant.now(), "musicSync", Duration.ofMinutes(1), Duration.ZERO))
+                        .ifPresent(lock::set);
+                return lock.get() != null;
+            });
+            clearInvocations(spotifyService);
+
+            try {
+                // Execute
+                musicSyncService.syncMusicStatus();
+
+                // Verify: This instance did no work
+                verify(spotifyService, never()).getCurrentlyPlayingTrack(any());
+            } finally {
+                lock.get().unlock();
+            }
         }
     }
 
