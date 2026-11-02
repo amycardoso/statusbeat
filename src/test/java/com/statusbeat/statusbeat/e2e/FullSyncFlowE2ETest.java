@@ -24,10 +24,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -375,17 +373,11 @@ class FullSyncFlowE2ETest {
         @Test
         @DisplayName("should skip the cycle when another instance holds the sync lock")
         void shouldSkipWhenLockHeldElsewhere() {
-            // Setup: Another instance is mid-cycle. Retry because the background
-            // scheduler in this test context may briefly hold the lock.
+            // Setup: Another instance is mid-cycle
             createActiveUser();
-            AtomicReference<SimpleLock> lock = new AtomicReference<>();
-            await().atMost(Duration.ofSeconds(5)).until(() -> {
-                lockProvider.lock(new LockConfiguration(
-                        Instant.now(), "musicSync", Duration.ofMinutes(1), Duration.ZERO))
-                        .ifPresent(lock::set);
-                return lock.get() != null;
-            });
-            clearInvocations(spotifyService);
+            SimpleLock lock = lockProvider.lock(new LockConfiguration(
+                    Instant.now(), "musicSync", Duration.ofMinutes(1), Duration.ZERO))
+                    .orElseThrow();
 
             try {
                 // Execute
@@ -394,7 +386,7 @@ class FullSyncFlowE2ETest {
                 // Verify: This instance did no work
                 verify(spotifyService, never()).getCurrentlyPlayingTrack(any());
             } finally {
-                lock.get().unlock();
+                lock.unlock();
             }
         }
     }
