@@ -37,6 +37,9 @@ services:
 
       # Encryption
       ENCRYPTION_SECRET_KEY: ${ENCRYPTION_SECRET_KEY}
+
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     depends_on:
       - mongodb
     networks:

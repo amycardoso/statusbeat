@@ -33,7 +33,7 @@ public class MusicSyncService {
     @Scheduled(fixedDelayString = "${statusbeat.sync.polling-interval}")
     @SchedulerLock(
             name = "musicSync",
-            lockAtLeastFor = "${statusbeat.sync.lock-at-least-for:PT5S}",
+            lockAtLeastFor = "${statusbeat.sync.lock-at-least-for:${statusbeat.sync.polling-interval}}",
             lockAtMostFor = "${statusbeat.sync.lock-at-most-for:PT2M}")
     public void syncMusicStatus() {
         log.debug("Starting music status sync cycle");
