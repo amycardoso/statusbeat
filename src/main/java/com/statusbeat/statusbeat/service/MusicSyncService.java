@@ -7,6 +7,7 @@ import com.statusbeat.statusbeat.model.User;
 import com.statusbeat.statusbeat.model.UserSettings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,10 @@ public class MusicSyncService {
     private long expirationOverheadMs;
 
     @Scheduled(fixedDelayString = "${statusbeat.sync.polling-interval}")
+    @SchedulerLock(
+            name = "musicSync",
+            lockAtLeastFor = "${statusbeat.sync.lock-at-least-for:${statusbeat.sync.polling-interval}}",
+            lockAtMostFor = "${statusbeat.sync.lock-at-most-for:PT2M}")
     public void syncMusicStatus() {
         log.debug("Starting music status sync cycle");
 
@@ -93,7 +98,7 @@ public class MusicSyncService {
             return;
         }
 
-        if (!isDeviceAllowed(user, currentTrack.getDeviceId())) {
+        if (!isDeviceAllowed(user, settings, currentTrack.getDeviceId())) {
             log.debug("User {} is playing on non-tracked device '{}', skipping sync",
                     user.getSlackUserId(), currentTrack.getDeviceName());
             handleNoTrackPlaying(user, settings);
@@ -207,26 +212,17 @@ public class MusicSyncService {
         return !previousTrackId.equals(currentTrack.getTrackId());
     }
 
-    private boolean isDeviceAllowed(User user, String deviceId) {
+    private boolean isDeviceAllowed(User user, UserSettings settings, String deviceId) {
         if (deviceId == null) {
             log.debug("No device ID available for user {}, allowing sync", user.getSlackUserId());
             return true;
         }
 
-        var settings = userService.getUserSettings(user.getId());
-
-        if (settings.isEmpty()) {
-            log.warn("No settings found for user {}, allowing sync", user.getSlackUserId());
+        if (settings.getAllowedDeviceIds() == null || settings.getAllowedDeviceIds().isEmpty()) {
             return true;
         }
 
-        var userSettings = settings.get();
-
-        if (userSettings.getAllowedDeviceIds() == null || userSettings.getAllowedDeviceIds().isEmpty()) {
-            return true;
-        }
-
-        boolean isAllowed = userSettings.getAllowedDeviceIds().contains(deviceId);
+        boolean isAllowed = settings.getAllowedDeviceIds().contains(deviceId);
 
         if (!isAllowed) {
             log.debug("Device {} not in allowed list for user {}", deviceId, user.getSlackUserId());

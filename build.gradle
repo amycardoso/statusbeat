@@ -44,6 +44,10 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-crypto'
 	implementation 'org.bouncycastle:bcprov-jdk18on:1.86'
 
+	// Distributed lock so only one instance runs the sync loop
+	implementation 'net.javacrumbs.shedlock:shedlock-spring:7.10.1'
+	implementation 'net.javacrumbs.shedlock:shedlock-provider-mongo:7.10.1'
+
 	// Retry
 	implementation 'org.springframework.retry:spring-retry:2.0.13'
 	implementation 'org.springframework:spring-aspects'
