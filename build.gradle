@@ -38,7 +38,7 @@ dependencies {
 	implementation 'com.slack.api:bolt-jetty:1.53.0'
 
 	// Spotify Web API
-	implementation 'se.michaelthelin.spotify:spotify-web-api-java:10.0.0'
+	implementation 'se.michaelthelin.spotify:spotify-web-api-java:10.1.0'
 
 	// Encryption
 	implementation 'org.springframework.security:spring-security-crypto'
