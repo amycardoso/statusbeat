@@ -46,7 +46,7 @@ dependencies {
 
 	// Distributed lock so only one instance runs the sync loop
 	implementation 'net.javacrumbs.shedlock:shedlock-spring:7.11.0'
-	implementation 'net.javacrumbs.shedlock:shedlock-provider-mongo:7.10.1'
+	implementation 'net.javacrumbs.shedlock:shedlock-provider-mongo:7.11.0'
 
 	// Retry
 	implementation 'org.springframework.retry:spring-retry:2.0.13'
